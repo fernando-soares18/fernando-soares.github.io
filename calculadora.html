@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora — Fernando Soares</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            min-height: 100vh;
+            background: #0d1117;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(34,197,94,0.07) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(34,197,94,0.05) 0%, transparent 50%);
+        }
+
+        .volta {
+            position: fixed;
+            top: 1.2rem;
+            left: 1.5rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+        .volta:hover { color: #22c55e; }
+
+        .calc-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .calc-title {
+            text-align: center;
+        }
+        .calc-title h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .calc-title h1 span { color: #22c55e; }
+        .calc-title p { color: #94a3b8; font-size: 0.85rem; margin-top: 0.3rem; }
+
+        .calc {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 24px;
+            padding: 1.5rem;
+            width: min(340px, 94vw);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(34,197,94,0.08);
+        }
+
+        @media (max-width: 400px) {
+            .calc { padding: 1rem; border-radius: 18px; }
+            .btn { padding: 0.9rem 0; font-size: 1rem; border-radius: 10px; }
+            .display-result { font-size: 2rem; }
+            .btn-grid { gap: 0.5rem; }
+        }
+
+        /* Display */
+        .display {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 14px;
+            padding: 1rem 1.4rem;
+            margin-bottom: 1.2rem;
+            text-align: right;
+            min-height: 96px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 0.3rem;
+        }
+        .display-history {
+            color: #484f58;
+            font-size: 0.85rem;
+            min-height: 1.2rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .display-expr {
+            color: #8b949e;
+            font-size: 1rem;
+            min-height: 1.4rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .display-result {
+            color: #e6edf3;
+            font-size: 2.4rem;
+            font-weight: 300;
+            line-height: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: color 0.15s;
+        }
+        .display-result.green { color: #22c55e; }
+
+        /* Botões */
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.65rem;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 1.1rem 0;
+            transition: transform 0.08s, opacity 0.15s, background 0.15s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active { transform: scale(0.93); opacity: 0.85; }
+
+        /* Tipos de botão */
+        .btn-num {
+            background: #21262d;
+            color: #e6edf3;
+            border: 1px solid #30363d;
+        }
+        .btn-num:hover { background: #292e36; border-color: #484f58; }
+
+        .btn-op {
+            background: #1c3a2a;
+            color: #4ade80;
+            border: 1px solid #22c55e40;
+        }
+        .btn-op:hover { background: #22c55e20; border-color: #22c55e; }
+
+        .btn-eq {
+            background: #22c55e;
+            color: #0d1117;
+            font-weight: 700;
+            border: none;
+            grid-column: span 1;
+        }
+        .btn-eq:hover { background: #16a34a; }
+
+        .btn-clear {
+            background: #2d1b1b;
+            color: #f87171;
+            border: 1px solid #f8717140;
+        }
+        .btn-clear:hover { background: #f8717118; border-color: #f87171; }
+
+        .btn-ce {
+            background: #2a2010;
+            color: #fbbf24;
+            border: 1px solid #fbbf2440;
+        }
+        .btn-ce:hover { background: #fbbf2415; border-color: #fbbf24; }
+
+        .btn-zero { grid-column: span 2; }
+
+        .btn-percent {
+            background: #1a1f2e;
+            color: #60a5fa;
+            border: 1px solid #60a5fa40;
+        }
+        .btn-percent:hover { background: #60a5fa15; border-color: #60a5fa; }
+
+        .btn-sign {
+            background: #1a1f2e;
+            color: #a78bfa;
+            border: 1px solid #a78bfa40;
+        }
+        .btn-sign:hover { background: #a78bfa15; border-color: #a78bfa; }
+
+        /* Histórico */
+        .historico {
+            background: #0d1117;
+            border: 1px solid #21262d;
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            margin-top: 0.8rem;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        .historico::-webkit-scrollbar { width: 4px; }
+        .historico::-webkit-scrollbar-track { background: transparent; }
+        .historico::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+
+        .historico-title {
+            color: #484f58;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+        .historico-item {
+            display: flex;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: 0.82rem;
+            padding: 0.2rem 0;
+            border-bottom: 1px solid #21262d;
+        }
+        .historico-item:last-child { border-bottom: none; }
+        .historico-item .res { color: #22c55e; font-weight: 600; }
+        .historico-vazio { color: #484f58; font-size: 0.82rem; text-align: center; padding: 0.5rem 0; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="volta">← Voltar ao portfólio</a>
+
+    <div class="calc-wrapper">
+        <div class="calc-title">
+            <h1>Calcula<span>dora</span></h1>
+            <p>Projeto Front-end por Fernando Soares</p>
+        </div>
+
+        <div class="calc">
+            <div class="display">
+                <div class="display-history" id="history"></div>
+                <div class="display-expr" id="expr"></div>
+                <div class="display-result" id="result">0</div>
+            </div>
+
+            <div class="btn-grid">
+                <!-- Linha 1 -->
+                <button class="btn btn-clear"   onclick="limpar()">C</button>
+                <button class="btn btn-ce"      onclick="apagar()">CE</button>
+                <button class="btn btn-percent" onclick="porcentagem()">%</button>
+                <button class="btn btn-op"      onclick="operacao('/')">÷</button>
+                <!-- Linha 2 -->
+                <button class="btn btn-num" onclick="digito('7')">7</button>
+                <button class="btn btn-num" onclick="digito('8')">8</button>
+                <button class="btn btn-num" onclick="digito('9')">9</button>
+                <button class="btn btn-op" onclick="operacao('*')">×</button>
+                <!-- Linha 3 -->
+                <button class="btn btn-num" onclick="digito('4')">4</button>
+                <button class="btn btn-num" onclick="digito('5')">5</button>
+                <button class="btn btn-num" onclick="digito('6')">6</button>
+                <button class="btn btn-op" onclick="operacao('-')">−</button>
+                <!-- Linha 4 -->
+                <button class="btn btn-num" onclick="digito('1')">1</button>
+                <button class="btn btn-num" onclick="digito('2')">2</button>
+                <button class="btn btn-num" onclick="digito('3')">3</button>
+                <button class="btn btn-op" onclick="operacao('+')">+</button>
+                <!-- Linha 5 -->
+                <button class="btn btn-sign btn-zero" onclick="trocarSinal()">+/−</button>
+                <button class="btn btn-num" onclick="ponto()">.</button>
+                <button class="btn btn-eq"  onclick="igual()">=</button>
+            </div>
+
+            <div class="historico">
+                <div class="historico-title">Histórico</div>
+                <div id="historico-lista">
+                    <div class="historico-vazio">Nenhum cálculo ainda</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let estado = {
+            atual: '0',
+            anterior: null,
+            op: null,
+            novaEntrada: true,
+            expr: ''
+        };
+
+        const elResult  = document.getElementById('result');
+        const elExpr    = document.getElementById('expr');
+        const elHistory = document.getElementById('history');
+        const elLista   = document.getElementById('historico-lista');
+        const historico = [];
+
+        function atualizar() {
+            const n = parseFloat(estado.atual);
+            elResult.textContent = isFinite(n) ? formatar(n) : 'Erro';
+            elResult.classList.toggle('green', estado.novaEntrada && estado.op === null && estado.anterior !== null);
+            elExpr.textContent = estado.expr;
+        }
+
+        function formatar(n) {
+            if (Math.abs(n) >= 1e12 || (Math.abs(n) < 1e-6 && n !== 0)) {
+                return n.toExponential(4);
+            }
+            const s = parseFloat(n.toPrecision(12)).toString();
+            return s.length > 15 ? parseFloat(n.toFixed(10)).toString() : s;
+        }
+
+        function digito(d) {
+            if (estado.novaEntrada) {
+                estado.atual = d === '.' ? '0.' : d;
+                estado.novaEntrada = false;
+            } else {
+                if (estado.atual.length >= 15) return;
+                estado.atual = estado.atual === '0' && d !== '.' ? d : estado.atual + d;
+            }
+            atualizar();
+        }
+
+        function ponto() {
+            if (estado.novaEntrada) { estado.atual = '0.'; estado.novaEntrada = false; }
+            else if (!estado.atual.includes('.')) estado.atual += '.';
+            atualizar();
+        }
+
+        function operacao(op) {
+            if (estado.op && !estado.novaEntrada) calcular(false);
+            estado.anterior = parseFloat(estado.atual);
+            estado.op = op;
+            estado.novaEntrada = true;
+            const simb = { '+': '+', '-': '−', '*': '×', '/': '÷' }[op];
+            estado.expr = formatar(estado.anterior) + ' ' + simb;
+            elHistory.textContent = '';
+            atualizar();
+        }
+
+        function calcular(finalizar = true) {
+            if (estado.op === null || estado.anterior === null) return;
+            const a = estado.anterior;
+            const b = parseFloat(estado.atual);
+            const simb = { '+': '+', '-': '−', '*': '×', '/': '÷' }[estado.op];
+            let res;
+            switch (estado.op) {
+                case '+': res = a + b; break;
+                case '-': res = a - b; break;
+                case '*': res = a * b; break;
+                case '/': res = b === 0 ? null : a / b; break;
+            }
+            const exprCompleta = formatar(a) + ' ' + simb + ' ' + formatar(b) + ' =';
+            if (finalizar) {
+                if (res === null) { estado.atual = 'Erro'; }
+                else {
+                    adicionarHistorico(exprCompleta, formatar(res));
+                    estado.atual = formatar(res);
+                }
+                elHistory.textContent = exprCompleta;
+                estado.expr = '';
+                estado.op = null;
+                estado.anterior = null;
+                estado.novaEntrada = true;
+            } else {
+                estado.atual = res === null ? '0' : formatar(res);
+            }
+            atualizar();
+        }
+
+        function igual() { calcular(true); }
+
+        function limpar() {
+            estado = { atual: '0', anterior: null, op: null, novaEntrada: true, expr: '' };
+            elHistory.textContent = '';
+            atualizar();
+        }
+
+        function apagar() {
+            if (estado.novaEntrada) return;
+            estado.atual = estado.atual.length > 1 ? estado.atual.slice(0, -1) : '0';
+            atualizar();
+        }
+
+        function porcentagem() {
+            const n = parseFloat(estado.atual);
+            estado.atual = formatar(estado.anterior !== null ? estado.anterior * n / 100 : n / 100);
+            estado.novaEntrada = true;
+            atualizar();
+        }
+
+        function trocarSinal() {
+            if (estado.atual === '0' || estado.atual === 'Erro') return;
+            estado.atual = estado.atual.startsWith('-') ? estado.atual.slice(1) : '-' + estado.atual;
+            atualizar();
+        }
+
+        function adicionarHistorico(expr, res) {
+            historico.unshift({ expr, res });
+            if (historico.length > 8) historico.pop();
+            elLista.innerHTML = historico.map(h =>
+                `<div class="historico-item"><span>${h.expr}</span><span class="res">${h.res}</span></div>`
+            ).join('');
+        }
+
+        // Suporte teclado
+        document.addEventListener('keydown', e => {
+            if (e.key >= '0' && e.key <= '9') digito(e.key);
+            else if (e.key === '.') ponto();
+            else if (e.key === '+') operacao('+');
+            else if (e.key === '-') operacao('-');
+            else if (e.key === '*') operacao('*');
+            else if (e.key === '/') { e.preventDefault(); operacao('/'); }
+            else if (e.key === 'Enter' || e.key === '=') igual();
+            else if (e.key === 'Backspace') apagar();
+            else if (e.key === 'Escape') limpar();
+            else if (e.key === '%') porcentagem();
+        });
+    </script>
+</body>
+</html>

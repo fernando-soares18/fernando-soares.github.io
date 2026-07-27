@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Fernando Soares — Desenvolvedor Front-end</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@200;400;500;700&display=swap" rel="stylesheet">
+    </head>
+
+    <body>
+        <!-- HERO -->
+        <div class="caixa-principal" id="home">
+            <nav>
+                <h2 class="portifolio">Portifó<span>lio</span></h2>
+                <ul>
+                    <li><a class="link-menu" href="#home">Home</a></li>
+                    <li><a class="link-menu" href="#sobre">Sobre</a></li>
+                    <li><a class="link-menu" href="#projetos-id">Projetos</a></li>
+                    <li><a class="link-menu" href="#fale-comigo">Fale comigo</a></li>
+                </ul>
+            </nav>
+            <div class="meu-nome">
+                <h1>Fernando <span>Soares</span></h1>
+                <h3>Desenvolvedor Front-end</h3>
+                <a href="#fale-comigo" class="btn-hero">Entre em contato</a>
+            </div>
+
+            <!-- CORUJA -->
+            <div class="coruja-container">
+                <svg class="coruja" viewBox="0 0 220 310" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="bodyGrad" cx="38%" cy="30%" r="65%">
+                            <stop offset="0%" stop-color="#40916c"/>
+                            <stop offset="55%" stop-color="#2d6a4f"/>
+                            <stop offset="100%" stop-color="#0d2b1a"/>
+                        </radialGradient>
+                        <radialGradient id="headGrad" cx="38%" cy="30%" r="65%">
+                            <stop offset="0%" stop-color="#52b788"/>
+                            <stop offset="55%" stop-color="#40916c"/>
+                            <stop offset="100%" stop-color="#1b4332"/>
+                        </radialGradient>
+                        <radialGradient id="eyeGrad" cx="35%" cy="30%" r="70%">
+                            <stop offset="0%" stop-color="#ffd166"/>
+                            <stop offset="45%" stop-color="#f4a261"/>
+                            <stop offset="100%" stop-color="#c8520a"/>
+                        </radialGradient>
+                        <radialGradient id="faceGrad" cx="50%" cy="40%" r="60%">
+                            <stop offset="0%" stop-color="#d4aa70"/>
+                            <stop offset="100%" stop-color="#8b6340"/>
+                        </radialGradient>
+                        <radialGradient id="wingGrad" cx="35%" cy="25%" r="70%">
+                            <stop offset="0%" stop-color="#1b4332"/>
+                            <stop offset="100%" stop-color="#081c11"/>
+                        </radialGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2" result="blur"/>
+                            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                        </filter>
+                    </defs>
+
+                    <!-- Sombra no galho -->
+                    <ellipse cx="110" cy="280" rx="72" ry="8" fill="#000" opacity="0.2"/>
+
+                    <!-- Galho -->
+                    <path d="M22 262 Q70 255 110 258 Q150 255 198 262 Q200 270 198 276 Q150 283 110 280 Q70 283 22 276 Q20 270 22 262Z" fill="#3d2b0e"/>
+                    <path d="M28 263 Q110 257 192 263" stroke="#5a3f1a" stroke-width="1.5" fill="none" opacity="0.5"/>
+                    <path d="M28 271 Q110 267 192 271" stroke="#5a3f1a" stroke-width="1" fill="none" opacity="0.3"/>
+                    <!-- Textura casca -->
+                    <path d="M50 258 Q52 270 50 278" stroke="#2a1a08" stroke-width="0.8" fill="none" opacity="0.6"/>
+                    <path d="M80 256 Q83 270 81 279" stroke="#2a1a08" stroke-width="0.8" fill="none" opacity="0.6"/>
+                    <path d="M130 256 Q133 270 131 279" stroke="#2a1a08" stroke-width="0.8" fill="none" opacity="0.6"/>
+                    <path d="M165 258 Q167 270 165 278" stroke="#2a1a08" stroke-width="0.8" fill="none" opacity="0.6"/>
+
+                    <!-- Garras esquerda -->
+                    <path d="M75 257 Q70 261 64 268" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M75 257 Q72 262 72 270" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M75 257 Q77 262 79 270" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M75 257 Q80 260 86 265" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <!-- Garras direita -->
+                    <path d="M145 257 Q140 261 134 268" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M145 257 Q142 262 142 270" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M145 257 Q147 262 149 270" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <path d="M145 257 Q150 260 156 265" stroke="#1a1208" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+                    <!-- Dedos - escama -->
+                    <path d="M70 263 Q72 264 74 263" stroke="#2a1a08" stroke-width="0.8" fill="none"/>
+                    <path d="M137 263 Q139 264 141 263" stroke="#2a1a08" stroke-width="0.8" fill="none"/>
+
+                    <!-- Corpo base -->
+                    <ellipse cx="110" cy="190" rx="56" ry="72" fill="url(#bodyGrad)"/>
+
+                    <!-- Asa direita (atrás) -->
+                    <path d="M155 138 Q190 162 187 218 Q183 245 170 257 Q158 250 152 234 Q157 208 154 170 Z" fill="url(#wingGrad)"/>
+                    <!-- Penas asa direita -->
+                    <path d="M158 150 Q184 172 182 208" stroke="#2d6a4f" stroke-width="1.2" fill="none" opacity="0.7"/>
+                    <path d="M161 163 Q185 185 184 220" stroke="#2d6a4f" stroke-width="1" fill="none" opacity="0.6"/>
+                    <path d="M163 177 Q184 198 183 232" stroke="#40916c" stroke-width="0.8" fill="none" opacity="0.5"/>
+                    <path d="M164 192 Q183 210 182 242" stroke="#40916c" stroke-width="0.8" fill="none" opacity="0.4"/>
+                    <path d="M163 207 Q180 222 179 250" stroke="#52b788" stroke-width="0.7" fill="none" opacity="0.35"/>
+                    <!-- Pontas penas direita -->
+                    <path d="M183 218 Q188 228 184 238" stroke="#1b4332" stroke-width="1.5" fill="none" opacity="0.8"/>
+                    <path d="M181 230 Q187 240 183 250" stroke="#1b4332" stroke-width="1.5" fill="none" opacity="0.7"/>
+
+                    <!-- Asa esquerda (atrás) -->
+                    <path d="M65 138 Q30 162 33 218 Q37 245 50 257 Q62 250 68 234 Q63 208 66 170 Z" fill="url(#wingGrad)"/>
+                    <!-- Penas asa esquerda -->
+                    <path d="M62 150 Q36 172 38 208" stroke="#2d6a4f" stroke-width="1.2" fill="none" opacity="0.7"/>
+                    <path d="M59 163 Q35 185 36 220" stroke="#2d6a4f" stroke-width="1" fill="none" opacity="0.6"/>
+                    <path d="M57 177 Q36 198 37 232" stroke="#40916c" stroke-width="0.8" fill="none" opacity="0.5"/>
+                    <path d="M56 192 Q37 210 38 242" stroke="#40916c" stroke-width="0.8" fill="none" opacity="0.4"/>
+                    <path d="M57 207 Q40 222 41 250" stroke="#52b788" stroke-width="0.7" fill="none" opacity="0.35"/>
+                    <!-- Pontas penas esquerda -->
+                    <path d="M37 218 Q32 228 36 238" stroke="#1b4332" stroke-width="1.5" fill="none" opacity="0.8"/>
+                    <path d="M39 230 Q33 240 37 250" stroke="#1b4332" stroke-width="1.5" fill="none" opacity="0.7"/>
+
+                    <!-- Penas do peito - camadas -->
+                    <!-- Camada 4 (mais alta) -->
+                    <path d="M87 170 Q90 180 95 177 Q98 166 87 170Z" fill="#52b788" opacity="0.6"/>
+                    <path d="M95 168 Q98 178 103 175 Q106 164 95 168Z" fill="#52b788" opacity="0.6"/>
+                    <path d="M103 168 Q106 178 111 175 Q114 164 103 168Z" fill="#52b788" opacity="0.6"/>
+                    <path d="M111 168 Q114 178 119 175 Q122 164 111 168Z" fill="#52b788" opacity="0.6"/>
+                    <path d="M119 170 Q122 180 127 177 Q130 166 119 170Z" fill="#52b788" opacity="0.6"/>
+                    <!-- Camada 3 -->
+                    <path d="M84 188 Q87 200 93 197 Q96 184 84 188Z" fill="#40916c" opacity="0.75"/>
+                    <path d="M93 186 Q96 198 102 195 Q105 182 93 186Z" fill="#40916c" opacity="0.75"/>
+                    <path d="M102 186 Q105 198 111 195 Q114 182 102 186Z" fill="#40916c" opacity="0.75"/>
+                    <path d="M111 186 Q114 198 120 195 Q123 182 111 186Z" fill="#40916c" opacity="0.75"/>
+                    <path d="M120 188 Q123 200 129 197 Q132 184 120 188Z" fill="#40916c" opacity="0.75"/>
+                    <!-- Camada 2 -->
+                    <path d="M82 208 Q85 220 92 217 Q95 204 82 208Z" fill="#2d6a4f" opacity="0.85"/>
+                    <path d="M92 206 Q95 218 102 215 Q105 202 92 206Z" fill="#2d6a4f" opacity="0.85"/>
+                    <path d="M102 206 Q105 218 112 215 Q115 202 102 206Z" fill="#2d6a4f" opacity="0.85"/>
+                    <path d="M112 206 Q115 218 122 215 Q125 202 112 206Z" fill="#2d6a4f" opacity="0.85"/>
+                    <path d="M122 208 Q125 220 132 217 Q135 204 122 208Z" fill="#2d6a4f" opacity="0.85"/>
+                    <!-- Camada 1 (base) -->
+                    <path d="M83 228 Q87 240 94 236 Q97 222 83 228Z" fill="#1b4332"/>
+                    <path d="M94 226 Q98 238 105 234 Q108 220 94 226Z" fill="#1b4332"/>
+                    <path d="M105 226 Q109 238 116 234 Q119 220 105 226Z" fill="#1b4332"/>
+                    <path d="M116 228 Q120 240 127 236 Q130 222 116 228Z" fill="#1b4332"/>
+                    <!-- Barriga arredondada -->
+                    <ellipse cx="110" cy="245" rx="28" ry="14" fill="#1b4332" opacity="0.5"/>
+
+                    <!-- Cabeça -->
+                    <ellipse cx="110" cy="100" rx="50" ry="48" fill="url(#headGrad)"/>
+
+                    <!-- Tufos das orelhas -->
+                    <!-- Tufo esquerdo -->
+                    <path d="M74 62 Q62 42 65 24 Q70 36 76 44 Q79 32 84 20 Q85 34 84 46 Q81 54 74 62Z" fill="#081c11"/>
+                    <path d="M74 62 Q65 44 68 28" stroke="#1b4332" stroke-width="1.2" fill="none" opacity="0.8"/>
+                    <path d="M74 62 Q78 42 80 26" stroke="#2d6a4f" stroke-width="1" fill="none" opacity="0.7"/>
+                    <path d="M74 62 Q82 44 82 30" stroke="#2d6a4f" stroke-width="0.8" fill="none" opacity="0.5"/>
+                    <!-- Tufo direito -->
+                    <path d="M146 62 Q158 42 155 24 Q150 36 144 44 Q141 32 136 20 Q135 34 136 46 Q139 54 146 62Z" fill="#081c11"/>
+                    <path d="M146 62 Q155 44 152 28" stroke="#1b4332" stroke-width="1.2" fill="none" opacity="0.8"/>
+                    <path d="M146 62 Q142 42 140 26" stroke="#2d6a4f" stroke-width="1" fill="none" opacity="0.7"/>
+                    <path d="M146 62 Q138 44 138 30" stroke="#2d6a4f" stroke-width="0.8" fill="none" opacity="0.5"/>
+
+                    <!-- Disco facial externo -->
+                    <ellipse cx="110" cy="102" rx="38" ry="36" fill="#7a5232" opacity="0.7"/>
+                    <!-- Disco facial interno -->
+                    <ellipse cx="110" cy="103" rx="33" ry="30" fill="url(#faceGrad)"/>
+                    <!-- Arcos do disco facial -->
+                    <path d="M78 90 Q88 82 98 90" stroke="#5a3520" stroke-width="1.2" fill="none" opacity="0.6"/>
+                    <path d="M122 90 Q132 82 142 90" stroke="#5a3520" stroke-width="1.2" fill="none" opacity="0.6"/>
+                    <path d="M81 102 Q110 96 139 102" stroke="#5a3520" stroke-width="0.8" fill="none" opacity="0.4"/>
+
+                    <!-- Penas da cabeça (textura) -->
+                    <path d="M78 78 Q83 73 88 78" stroke="#2d6a4f" stroke-width="1.3" fill="none" opacity="0.7"/>
+                    <path d="M86 70 Q91 65 96 70" stroke="#2d6a4f" stroke-width="1.1" fill="none" opacity="0.6"/>
+                    <path d="M95 64 Q100 60 105 64" stroke="#40916c" stroke-width="0.9" fill="none" opacity="0.5"/>
+                    <path d="M132 78 Q137 73 142 78" stroke="#2d6a4f" stroke-width="1.3" fill="none" opacity="0.7"/>
+                    <path d="M124 70 Q129 65 134 70" stroke="#2d6a4f" stroke-width="1.1" fill="none" opacity="0.6"/>
+                    <path d="M115 64 Q120 60 125 64" stroke="#40916c" stroke-width="0.9" fill="none" opacity="0.5"/>
+
+                    <!-- Olho esquerdo - soquete -->
+                    <circle cx="89" cy="96" r="18" fill="#0a1a0a"/>
+                    <!-- Olho esquerdo - íris -->
+                    <circle cx="89" cy="96" r="15" fill="url(#eyeGrad)"/>
+                    <!-- Olho esquerdo - detalhe íris -->
+                    <circle cx="89" cy="96" r="13" fill="none" stroke="#e07020" stroke-width="1.2" opacity="0.5"/>
+                    <circle cx="89" cy="96" r="10" fill="none" stroke="#c85a10" stroke-width="0.8" opacity="0.4"/>
+                    <!-- Olho esquerdo - pupila -->
+                    <circle cx="89" cy="96" r="7.5" fill="#050a05"/>
+                    <!-- Olho esquerdo - brilhos -->
+                    <circle cx="94" cy="91" r="3.5" fill="white" opacity="0.9"/>
+                    <circle cx="85" cy="100" r="1.5" fill="white" opacity="0.45"/>
+                    <!-- Pálpebra esquerda (animação piscar) -->
+                    <ellipse class="palpebra palpebra-e" cx="89" cy="96" rx="15" ry="15" fill="#c8a870"/>
+
+                    <!-- Olho direito - soquete -->
+                    <circle cx="131" cy="96" r="18" fill="#0a1a0a"/>
+                    <!-- Olho direito - íris -->
+                    <circle cx="131" cy="96" r="15" fill="url(#eyeGrad)"/>
+                    <!-- Olho direito - detalhe íris -->
+                    <circle cx="131" cy="96" r="13" fill="none" stroke="#e07020" stroke-width="1.2" opacity="0.5"/>
+                    <circle cx="131" cy="96" r="10" fill="none" stroke="#c85a10" stroke-width="0.8" opacity="0.4"/>
+                    <!-- Olho direito - pupila -->
+                    <circle cx="131" cy="96" r="7.5" fill="#050a05"/>
+                    <!-- Olho direito - brilhos -->
+                    <circle cx="136" cy="91" r="3.5" fill="white" opacity="0.9"/>
+                    <circle cx="127" cy="100" r="1.5" fill="white" opacity="0.45"/>
+                    <!-- Pálpebra direita (animação piscar) -->
+                    <ellipse class="palpebra palpebra-d" cx="131" cy="96" rx="15" ry="15" fill="#c8a870"/>
+
+                    <!-- Bico -->
+                    <path d="M102 115 Q110 130 118 115 Q114 107 110 106 Q106 107 102 115Z" fill="#c8832a"/>
+                    <path d="M102 115 Q107 110 110 109 Q113 110 118 115" stroke="#a06518" stroke-width="1" fill="none"/>
+                    <path d="M110 106 L110 128" stroke="#8a5510" stroke-width="0.8" fill="none"/>
+                    <!-- Narina -->
+                    <ellipse cx="107" cy="114" rx="2" ry="1.2" fill="#a06518" opacity="0.7"/>
+                    <ellipse cx="113" cy="114" rx="2" ry="1.2" fill="#a06518" opacity="0.7"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- SOBRE -->
+        <section id="sobre">
+            <img src="img/IMG_20241016_215758-removebg-preview.png" alt="Foto de Fernando Soares">
+            <div class="sobre-texto">
+                <h2>Sobre mim</h2>
+                <p>Olá! Sou <strong>Fernando Soares</strong>, desenvolvedor Front-end em transição de carreira, movido pela paixão por criar experiências digitais modernas e funcionais. Tenho experiência construindo interfaces responsivas e intuitivas com foco na experiência do usuário.</p>
+                <p>Trabalho com <strong>HTML</strong>, <strong>CSS</strong>, <strong>JavaScript</strong>, <strong>React</strong> e <strong>Node.js</strong> — sempre buscando escrever código limpo, organizado e eficiente. Acredito que a tecnologia é a ferramenta mais poderosa para transformar ideias em realidade.</p>
+                <div class="skills">
+                    <span>HTML5</span>
+                    <span>CSS3</span>
+                    <span>JavaScript</span>
+                    <span>React</span>
+                    <span>Node.js</span>
+                    <span>Git & GitHub</span>
+                    <span>Responsivo</span>
+                </div>
+                <a href="#fale-comigo" class="btn-contato">Entre em contato</a>
+            </div>
+        </section>
+
+        <!-- PROJETOS -->
+        <div class="projetos" id="projetos-id">
+            <h2>Alguns <span>Projetos</span></h2>
+
+            <div class="card-container">
+                <div class="card">
+                    <img src="./img/netflix.png" alt="Clone Netflix">
+                    <h5>Netflix</h5>
+                    <p>Projeto feito com base no aplicativo original, onde fiz cada linha de código com intuito de treinar e aprimorar minhas habilidades.</p>
+                    <a href="https://peaceful-starlight-02739b.netlify.app/" target="_blank">Ver projeto</a>
+                </div>
+                <div class="card">
+                    <img src="./img/starbucks.png" alt="Clone Starbucks">
+                    <h5>Starbucks</h5>
+                    <p>Projeto feito com base no site original, onde fiz cada linha de código com intuito de treinar e aprimorar minhas habilidades.</p>
+                    <a href="https://www.starbucks.com.br/" target="_blank">Ver projeto</a>
+                </div>
+                <div class="card">
+                    <img src="./img/crono.png" alt="Cronômetro">
+                    <h5>Cronômetro</h5>
+                    <p>Projeto feito durante uma aula do Devclub onde foi feito cada linha de código com intuito de aprimorar minhas habilidades.</p>
+                    <a href="https://cronometro-mpdz.netlify.app/" target="_blank">Ver projeto</a>
+                </div>
+            </div>
+
+            <!-- CALCULADORA DESTAQUE -->
+            <div class="calc-destaque">
+                <div class="calc-destaque-info">
+                    <span class="calc-badge">✦ Projeto em Destaque</span>
+                    <h3>Calculadora <span>Interativa</span></h3>
+                    <p>Calculadora moderna com histórico de operações, suporte a teclado, porcentagem, troca de sinal e tratamento de erros. Design dark com acentos em verde.</p>
+                    <ul class="calc-features">
+                        <li>Operações: + − × ÷ %</li>
+                        <li>Histórico dos últimos 8 cálculos</li>
+                        <li>Suporte completo ao teclado</li>
+                        <li>Responsiva e acessível</li>
+                    </ul>
+                    <a href="calculadora.html" target="_blank" class="btn-calc-ver">Abrir calculadora →</a>
+                </div>
+                <div class="calc-preview-wrap">
+                    <iframe src="calculadora.html" scrolling="no" title="Calculadora preview" class="calc-iframe"></iframe>
+                    <div class="calc-overlay" onclick="window.open('calculadora.html','_blank')">
+                        <span>Clique para abrir</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer id="fale-comigo">
+            <h5>Fernando Soares</h5>
+            <p>Para mais informações, me encontre nas redes sociais</p>
+            <div class="redes-sociais">
+                <a href="https://www.linkedin.com/in/fernando-soares-da-rosa-programador519994931555" target="_blank">
+                    <img src="./img/linkedin.png" alt="LinkedIn"> LinkedIn
+                </a>
+                <a href="https://github.com/fernando-soares18" target="_blank">
+                    <img src="./img/github img.png" alt="GitHub"> GitHub
+                </a>
+                <a href="tel:+5551999493155">
+                    <img src="./img/telefone.png" alt="Telefone"> Telefone
+                </a>
+                <a href="https://w.app/ujsrru" target="_blank">
+                    <img src="./img/img wpp.png" alt="WhatsApp"> WhatsApp
+                </a>
+            </div>
+            <p class="footer-copy">&copy; 2026 Fernando Soares. Todos os direitos reservados.</p>
+        </footer>
+
+    </body>
+
+</html>
