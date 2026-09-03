@@ -108,6 +108,25 @@
   .talking .mouth-idle { display: none; }
   .talking .mouth-talk { display: block; animation: talk .35s ease-in-out infinite; }
   @keyframes talk { 0%, 100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
+
+
+  .quick-wrap { flex: 0 0 auto; padding: 0 16px 12px; }
+  .quick-label { color: var(--muted); font-size: .72rem; margin: 0 0 8px 2px; }
+  .quick-actions { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+  .quick-action { flex: 0 0 auto; border: 1px solid var(--line); background: rgba(255,255,255,.025); color: #dce5ed; border-radius: 999px; padding: 7px 10px; font: 600 .73rem 'Josefin Sans', Arial, sans-serif; cursor: pointer; }
+  .quick-action:hover, .quick-action:focus-visible { border-color: var(--green); color: var(--green); outline: none; }
+  .msg a { color: var(--green); font-weight: 700; text-decoration: none; }
+  .msg a:hover { text-decoration: underline; }
+  .msg .msg-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+  .msg .msg-action { display: inline-flex; align-items: center; justify-content: center; padding: 7px 10px; border-radius: 9px; background: var(--green); color: #07110b; font-size: .78rem; font-weight: 700; text-decoration: none; }
+  .msg .msg-action.secondary { background: transparent; color: var(--green); border: 1px solid rgba(56,212,119,.45); }
+  .typing { display: inline-flex; gap: 4px; align-items: center; min-height: 18px; }
+  .typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: typingDot 1s infinite ease-in-out; }
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1} }
+  .privacy-note { color: var(--muted); font-size: .66rem; text-align: center; padding: 0 16px 10px; line-height: 1.35; }
+  @media (max-width: 390px) { .header { padding-inline: 16px; } .chat { padding-inline: 14px; } .input-row { padding-inline: 12px; gap: 7px; } .input-row button { padding-inline: 14px; } }
+
 </style>
 </head>
 <body>
@@ -174,14 +193,15 @@
       <h1>Nandolino <span>IA</span></h1>
       <p class="status"><span class="dot"></span> assistente de Fernando Soares</p>
       <div class="header-buttons">
-        <button class="key-settings" type="button" id="keySettingsBtn" title="Configurar chave de IA (opcional)">⚙️ IA</button>
         <button class="key-settings" type="button" id="voiceBtn" title="Ativar/desativar voz do Nandolino">🔊 Voz</button>
-        <button class="key-settings" type="button" id="logBtn" title="Ver perguntas sem resposta">📋 Log</button>
       </div>
     </div>
 
-    <div class="chat" id="chat">
-      <div class="msg bot">Oi! Eu sou o Nandolino 👋 Pergunta sobre o Fernando: projetos, tecnologias, formação, experiência, disponibilidade ou contato!</div>
+    <div class="chat" id="chat" aria-live="polite"></div>
+
+    <div class="quick-wrap" id="quickWrap">
+      <p class="quick-label">Você pode começar por aqui:</p>
+      <div class="quick-actions" id="quickActions"></div>
     </div>
 
     <div class="input-row">
@@ -189,211 +209,206 @@
       <input type="text" id="userInput" placeholder="Digite sua pergunta..." autocomplete="off">
       <button id="sendBtn">Enviar</button>
     </div>
+    <p class="privacy-note">Nandolino usa informações públicas deste portfólio. Nenhuma chave de API fica exposta nesta página.</p>
   </div>
 
-<script src="config.js" onerror="console.log('config.js não encontrado — usando respostas locais.')"></script>
 <script>
 const chat = document.getElementById('chat');
 const input = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const nandolino = document.getElementById('nandolino');
+const quickActions = document.getElementById('quickActions');
 
-const SOBRE_FERNANDO = `Você é o Nandolino, assistente virtual e simpático de Fernando Soares Da Rosa, um Desenvolvedor Front-end.
-Informações sobre o Fernando:
-- Atua como Desenvolvedor Front-end autônomo desde 2021 (5+ anos), atualmente disponível para novos projetos.
-- Mora em Novo Hamburgo, Rio Grande do Sul, Brasil.
-- Formação em programação Front-end pela Dev Club.
-- Tecnologias: HTML5, CSS3, JavaScript, PHP básico, Git/GitHub, deploy em GitHub Pages e Netlify.
-- Projeto real para cliente: site do Dr. Charles Genehr (drcharlesgenehr.com.br) — institucional, artigos, eBooks, painel administrativo e integração com WhatsApp.
-- Projetos de estudo: Netflix Clone (responsividade), Cronômetro (lógica e interação), Calculadora Interativa (histórico, atalhos de teclado).
-- Portfólio: https://fernando-soares18.github.io/fernando-soares.github.io/
-- Contato: WhatsApp wa.me/5551999493155, LinkedIn linkedin.com/in/fernando-soares-da-rosa-programador519994931555, GitHub github.com/fernando-soares18
-Você pode conversar livremente sobre qualquer assunto que o usuário quiser (curiosidades, conselhos, tecnologia em geral, o que for) — não se limite só a falar do Fernando. Quando o assunto for sobre o Fernando, use as informações acima. Responda sempre em português do Brasil, de forma breve (máximo 3-4 frases), simpática e com no máximo 1 emoji. Lembre-se do que foi dito antes na conversa.`;
+const LINKS = {
+  portfolio: '../index.html#projetos',
+  drCharles: 'https://drcharlesgenehr.com.br',
+  github: 'https://github.com/fernando-soares18',
+  linkedin: 'https://www.linkedin.com/in/fernando-soares-da-rosa-programador519994931555',
+  whatsapp: 'https://wa.me/5551999493155'
+};
 
-let conversationHistory = [];
+const QUICK = [
+  ['Conheça Fernando', 'Quem é o Fernando?'],
+  ['Projetos', 'Quais são os projetos do Fernando?'],
+  ['Tecnologias', 'Quais tecnologias o Fernando usa?'],
+  ['Projeto Dr. Charles', 'Me conte sobre o projeto do Dr. Charles'],
+  ['Por que contratar?', 'Por que eu deveria contratar o Fernando?']
+];
 
-function addMessage(text, who) {
+let lastTopic = 'geral';
+
+function normalizeText(text) {
+  return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function esc(text) {
+  return String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function whatsappUrl(topic = lastTopic) {
+  const messages = {
+    charles: 'Olá, Fernando! Vi seu portfólio e conversei com o Nandolino sobre o projeto do Dr. Charles. Gostaria de falar sobre um projeto parecido.',
+    projetos: 'Olá, Fernando! Vi seus projetos no portfólio e gostaria de conversar sobre um site para mim/meu negócio.',
+    tecnologias: 'Olá, Fernando! Vi seu portfólio e gostaria de conversar sobre uma oportunidade de desenvolvimento Front-end.',
+    contratar: 'Olá, Fernando! Vi seu portfólio, conversei com o Nandolino e tenho interesse em contratar seu trabalho.',
+    geral: 'Olá, Fernando! Vi seu portfólio e conversei com o Nandolino. Gostaria de falar sobre um projeto.'
+  };
+  return LINKS.whatsapp + '?text=' + encodeURIComponent(messages[topic] || messages.geral);
+}
+
+function addMessage(content, who = 'bot', actions = []) {
   const div = document.createElement('div');
   div.className = 'msg ' + who;
-  div.textContent = text;
+  if (who === 'user') {
+    div.textContent = content;
+  } else {
+    div.innerHTML = content;
+    if (actions.length) {
+      const row = document.createElement('div');
+      row.className = 'msg-actions';
+      actions.forEach(action => {
+        const a = document.createElement('a');
+        a.className = 'msg-action' + (action.secondary ? ' secondary' : '');
+        a.href = action.href;
+        a.textContent = action.label;
+        if (/^https?:/.test(action.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+        a.addEventListener('click', () => {
+          try {
+            const isWhats = /wa\.me|whatsapp/i.test(action.href);
+            const isProject = /drcharles|netlify|calculadora|#projetos/i.test(action.href);
+            if (isWhats || isProject) {
+              parent.postMessage({
+                type: 'portfolio-analytics',
+                event: isWhats ? 'whatsapp_click' : 'project_click',
+                meta: { label: action.label, source: 'nandolino' }
+              }, '*');
+            }
+          } catch (_) {}
+        });
+        row.appendChild(a);
+      });
+      div.appendChild(row);
+    }
+  }
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+  return div;
 }
 
-function getApiKey() {
-  const localKey = localStorage.getItem('nandolino_gemini_key');
-  if (localKey) return localKey;
-  if (window.GEMINI_API_KEY && window.GEMINI_API_KEY !== 'SUA_CHAVE_AQUI') return window.GEMINI_API_KEY;
-  return null;
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'msg bot';
+  div.id = 'typing';
+  div.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
 }
 
-const keySettingsBtn = document.getElementById('keySettingsBtn');
-function updateKeyButton() {
-  keySettingsBtn.classList.toggle('active', !!localStorage.getItem('nandolino_gemini_key'));
-}
-keySettingsBtn.addEventListener('click', () => {
-  const current = localStorage.getItem('nandolino_gemini_key');
-  if (current) {
-    if (confirm('Remover a chave de IA salva neste navegador?')) {
-      localStorage.removeItem('nandolino_gemini_key');
-      updateKeyButton();
-    }
-    return;
-  }
-  const key = prompt('Cole aqui sua chave de IA (Gemini). Ela fica salva só neste navegador/aparelho:');
-  if (key && key.trim()) {
-    localStorage.setItem('nandolino_gemini_key', key.trim());
-    updateKeyButton();
-  }
-});
-updateKeyButton();
-
-const logBtn = document.getElementById('logBtn');
-function getUnanswered() {
-  try { return JSON.parse(localStorage.getItem('nandolino_unanswered') || '[]'); } catch (e) { return []; }
-}
-function logUnanswered(question) {
-  const list = getUnanswered();
-  list.push({ q: question, data: new Date().toLocaleString('pt-BR') });
-  localStorage.setItem('nandolino_unanswered', JSON.stringify(list.slice(-50)));
-}
-logBtn.addEventListener('click', () => {
-  const list = getUnanswered();
-  if (!list.length) { alert('Nenhuma pergunta sem resposta registrada ainda 🎉'); return; }
-  const texto = list.map((item, i) => (i + 1) + '. [' + item.data + '] ' + item.q).join('\n');
-  if (confirm(texto + '\n\nApagar essa lista agora?')) {
-    localStorage.removeItem('nandolino_unanswered');
-  }
-});
-
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-async function callGemini(question) {
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
-  const contents = [...conversationHistory, { role: 'user', parts: [{ text: question }] }];
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-goog-api-key': getApiKey() },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SOBRE_FERNANDO }] },
-      contents: contents
-    })
+function renderQuickActions() {
+  quickActions.innerHTML = '';
+  QUICK.forEach(([label, question]) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'quick-action';
+    btn.textContent = label;
+    btn.addEventListener('click', () => ask(question));
+    quickActions.appendChild(btn);
   });
-  if (!res.ok) {
-    let detail = res.status;
-    try {
-      const errData = await res.json();
-      if (errData && errData.error && errData.error.message) detail = res.status + ' - ' + errData.error.message;
-    } catch (e) { /* corpo sem JSON, mantém só o status */ }
-    const err = new Error(detail);
-    err.status = res.status;
-    throw err;
-  }
-  const data = await res.json();
-  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
-    ? data.candidates[0].content.parts.map(p => p.text).join('')
-    : null;
-  if (!text) throw new Error('Resposta vazia da API');
-  return text;
 }
 
-async function respondWithAI(question) {
-  try {
-    return await callGemini(question);
-  } catch (err) {
-    if (err.status === 503) {
-      await sleep(1500);
-      return await callGemini(question);
-    }
-    throw err;
+function answerFor(question) {
+  const q = normalizeText(question);
+  const wantsMore = /outro|outros|mais projeto|mais projetos|continua|continuar/.test(q);
+
+  if (/quem e|conhecer|conheca|sobre fernando|fala do fernando|nome completo/.test(q)) {
+    lastTopic = 'geral';
+    return {
+      text: 'Fernando Soares é desenvolvedor Front-end de Novo Hamburgo/RS, com foco em criar sites responsivos, claros e profissionais. Ele trabalha com projetos próprios e já entregou um site completo para cliente real. Quer ver o projeto profissional ou conhecer as tecnologias que ele usa?',
+      actions: [{label:'Ver projetos', href:LINKS.portfolio, secondary:true}]
+    };
   }
+
+  if (/charles|medico|dermatolog/.test(q)) {
+    lastTopic = 'charles';
+    return {
+      text: 'O site do Dr. Charles Genehr é o principal projeto profissional do portfólio. Fernando trabalhou na estrutura institucional, artigos, eBooks, painel administrativo, integração com WhatsApp, responsividade, publicação e ajustes de hospedagem. Posso te mostrar outros projetos também.',
+      actions: [
+        {label:'Abrir site do Dr. Charles', href:LINKS.drCharles},
+        {label:'Falar com Fernando', href:whatsappUrl('charles'), secondary:true}
+      ]
+    };
+  }
+
+  if (/projeto|portfolio|trabalho|site que fez|sites que fez/.test(q) || wantsMore) {
+    lastTopic = 'projetos';
+    return {
+      text: 'Os destaques são o site profissional do Dr. Charles Genehr, o Netflix Clone, um Cronômetro e uma Calculadora Interativa. Cada um mostra uma habilidade diferente: projeto real, responsividade, lógica, interação e acabamento visual.',
+      actions: [
+        {label:'Ver seção de projetos', href:LINKS.portfolio},
+        {label:'Conversar sobre um projeto', href:whatsappUrl('projetos'), secondary:true}
+      ]
+    };
+  }
+
+  if (/tecnologia|stack|linguagem|html|css|javascript|php|git|github|ferramenta/.test(q)) {
+    lastTopic = 'tecnologias';
+    return {
+      text: 'Fernando trabalha principalmente com HTML5, CSS3 e JavaScript, além de PHP básico, Git/GitHub e publicação em GitHub Pages, Netlify e hospedagem tradicional. O foco é transformar o layout em uma experiência responsiva e funcional.',
+      actions: [{label:'Ver GitHub', href:LINKS.github, secondary:true}]
+    };
+  }
+
+  if (/por que contratar|porque contratar|contratar|diferencial|vale a pena|o que entrega/.test(q)) {
+    lastTopic = 'contratar';
+    return {
+      text: 'Porque ele não fica só no visual: acompanha estrutura, responsividade, conteúdo, publicação e os ajustes necessários para colocar o site no ar. O projeto do Dr. Charles mostra essa capacidade de levar um trabalho real do desenvolvimento à entrega.',
+      actions: [{label:'Falar com Fernando no WhatsApp', href:whatsappUrl('contratar')}]
+    };
+  }
+
+  if (/formacao|curso|estudou|dev club/.test(q)) {
+    lastTopic = 'geral';
+    return { text: 'Fernando tem formação em programação Front-end pela Dev Club e segue evoluindo com prática constante em projetos próprios e trabalhos reais.' };
+  }
+
+  if (/experiencia|experiencia profissional|atua|tempo|desde quando/.test(q)) {
+    lastTopic = 'geral';
+    return { text: 'Fernando atua com desenvolvimento Front-end desde 2021. Além dos estudos e projetos próprios, já realizou uma entrega profissional completa para cliente, o que trouxe experiência com publicação, manutenção e necessidades reais de negócio.' };
+  }
+
+  if (/disponivel|freelance|vaga|oportunidade|emprego/.test(q)) {
+    lastTopic = 'contratar';
+    return { text: 'Sim. Fernando está disponível para novos projetos e oportunidades em Front-end.', actions:[{label:'Falar com Fernando', href:whatsappUrl('contratar')}] };
+  }
+
+  if (/contato|whatsapp|falar com|chamar|orcamento|preco|valor/.test(q)) {
+    lastTopic = lastTopic || 'geral';
+    return { text: 'O jeito mais rápido é pelo WhatsApp. Já deixei uma mensagem pronta dizendo que você veio pelo portfólio e conversou comigo.', actions:[{label:'Abrir WhatsApp', href:whatsappUrl(lastTopic)}] };
+  }
+
+  if (/linkedin/.test(q)) return { text:'Você pode conhecer mais do perfil profissional do Fernando pelo LinkedIn.', actions:[{label:'Abrir LinkedIn', href:LINKS.linkedin, secondary:true}] };
+  if (/github/.test(q)) return { text:'No GitHub estão os códigos e estudos do Fernando.', actions:[{label:'Abrir GitHub', href:LINKS.github, secondary:true}] };
+  if (/oi|ola|bom dia|boa tarde|boa noite|e ai|fala/.test(q)) return { text:'Oi! Eu sou o Nandolino, guia do portfólio do Fernando. Posso te mostrar quem ele é, os projetos, tecnologias ou te levar direto ao contato.' };
+
+  return {
+    text: 'Consigo te ajudar melhor com informações sobre o Fernando e o trabalho dele. Escolhe um dos atalhos abaixo ou pergunta sobre projetos, tecnologias, experiência, disponibilidade ou contato.'
+  };
 }
 
-function respond(question) {
-  const q = question.toLowerCase();
-
-  if (q.includes('projeto') && q.includes('charles')) {
-    return 'O projeto do Dr. Charles Genehr foi um site profissional completo: institucional, artigos, eBooks, painel admin e integração com WhatsApp. Site: drcharlesgenehr.com.br 🩺';
-  }
-  if (q.includes('projeto') && (q.includes('netflix'))) {
-    return 'O Netflix Clone foi um estudo de interface pra praticar estrutura, composição visual e responsividade com HTML, CSS e JavaScript 🎬';
-  }
-  if (q.includes('cronômetro') || q.includes('cronometro')) {
-    return 'O Cronômetro é um projeto de lógica e manipulação de interface, com controles simples e resposta em tempo real ⏱️';
-  }
-  if (q.includes('calculadora')) {
-    return 'A Calculadora Interativa tem histórico, atalhos de teclado, porcentagem, troca de sinal e tratamento de erros — um projeto funcional completo 🧮';
-  }
-  if (q.includes('portfólio') || q.includes('portfolio')) {
-    return 'O portfólio completo do Fernando está em https://fernando-soares18.github.io/fernando-soares.github.io/ — dá uma olhada nos projetos! 💻';
-  }
-  if (q.includes('tecnologia') || q.includes('stack') || q.includes('linguagem') || q.includes('ferramenta')) {
-    return 'Fernando trabalha com HTML5, CSS3, JavaScript, PHP básico, Git/GitHub e faz deploy em GitHub Pages e Netlify. O foco principal é Front-end 🛠️';
-  }
-  if (q.includes('experiência') || q.includes('experiencia') || q.includes('trabalha') || q.includes('atua')) {
-    return 'Fernando atua como Desenvolvedor Front-end autônomo desde 2021 (5+ anos). Já entregou um projeto real completo para cliente (site do Dr. Charles Genehr) e mantém estudos constantes com projetos próprios, sempre evoluindo em organização de código, responsividade e publicação de sites 📈';
-  }
-  if (q.includes('o que') && (q.includes('faz') || q.includes('fasc') || q.includes('fsc'))) {
-    return 'Fernando cria interfaces web modernas, responsivas e fáceis de usar. No dia a dia ele cuida de tudo: estrutura em HTML/CSS, interatividade com JavaScript, pequenas integrações em PHP, organização de código no Git e publicação do site (GitHub Pages, Netlify ou hospedagem própria). Também já fez painel administrativo, SEO básico e ajustes de hospedagem em projeto real 💻';
-  }
-  if (q.includes('formação') || q.includes('formacao') || q.includes('curso') || q.includes('estudou') || q.includes('dev club')) {
-    return 'Fernando se formou em programação Front-end pela Dev Club, e está sempre estudando e evoluindo na área 🎓';
-  }
-  if (q.includes('onde') && (q.includes('mora') || q.includes('fica') || q.includes('localiza'))) {
-    return 'Fernando é de Novo Hamburgo, Rio Grande do Sul, Brasil 📍';
-  }
-  if (q.includes('disponív') || q.includes('disponiv') || q.includes('freelance') || q.includes('vaga') || q.includes('emprego')) {
-    return 'Sim! Fernando está disponível para novos projetos e oportunidades como Desenvolvedor Front-end 🚀';
-  }
-  if (q.includes('contato') || q.includes('contratar') || q.includes('whatsapp') || q.includes('falar com')) {
-    return 'Você pode chamar o Fernando direto pelo WhatsApp: wa.me/5551999493155, ou pelo LinkedIn dele 📲';
-  }
-  if (q.includes('linkedin')) {
-    return 'O LinkedIn do Fernando: linkedin.com/in/fernando-soares-da-rosa-programador519994931555 💼';
-  }
-  if (q.includes('github')) {
-    return 'O GitHub do Fernando: github.com/fernando-soares18 — lá tem os códigos dos projetos e estudos dele 🧑‍💻';
-  }
-  if (q.includes('nome') && (q.includes('completo') || q.includes('fernando'))) {
-    return 'O nome completo dele é Fernando Soares Da Rosa 😊';
-  }
-  if (q.includes('quem é você') || q.includes('quem e voce') || q.includes('nandolino')) {
-    return 'Eu sou o Nandolino, o assistente virtual do Fernando! Estou aqui pra contar sobre ele, os projetos e como te ajudar a entrar em contato 😄';
-  }
-  return 'Boa pergunta! Ainda estou aprendendo sobre isso, mas você pode perguntar sobre os projetos do Fernando, tecnologias, formação, disponibilidade ou como entrar em contato 😊';
-}
-
-async function ask() {
-  const text = input.value.trim();
+async function ask(forcedText) {
+  const text = (forcedText || input.value).trim();
   if (!text) return;
   unlockVoice();
   addMessage(text, 'user');
   input.value = '';
-
   nandolino.classList.add('talking');
-
-  if (getApiKey()) {
-    try {
-      const answer = await respondWithAI(text);
-      addMessage(answer, 'bot');
-      speak(answer);
-      conversationHistory.push({ role: 'user', parts: [{ text }] });
-      conversationHistory.push({ role: 'model', parts: [{ text: answer }] });
-      conversationHistory = conversationHistory.slice(-20);
-      return;
-    } catch (err) {
-      console.error(err);
-      nandolino.classList.remove('talking');
-      addMessage('(IA indisponível agora: ' + err.message + ' — respondendo com o modo local)', 'bot');
-    }
-  }
-
-  setTimeout(() => {
-    const answer = respond(text);
-    if (answer.startsWith('Boa pergunta!')) logUnanswered(text);
-    addMessage(answer, 'bot');
-    speak(answer);
-  }, 900);
+  const typing = showTyping();
+  await new Promise(r => setTimeout(r, 420));
+  typing.remove();
+  const answer = answerFor(text);
+  addMessage(answer.text, 'bot', answer.actions || []);
+  speak(answer.text.replace(/<[^>]+>/g, ''));
 }
 
 /* Voz: Nandolino falando (Text-to-Speech) */
@@ -405,18 +420,11 @@ function unlockVoice() {
   silence.volume = 0;
   speechSynthesis.speak(silence);
 }
-function isVoiceEnabled() {
-  return localStorage.getItem('nandolino_voice_muted') !== '1';
-}
+function isVoiceEnabled() { return localStorage.getItem('nandolino_voice_muted') !== '1'; }
 function speak(text) {
   nandolino.classList.remove('talking');
   if (!isVoiceEnabled() || !('speechSynthesis' in window)) return;
-  const clean = text
-    .replace(/https?:\/\/\S+/g, '')
-    .replace(/[*_#]/g, '')
-    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\uFE0F]/gu, '')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+  const clean = text.replace(/https?:\/\/\S+/g, '').replace(/[*_#]/g, '').replace(/\s{2,}/g, ' ').trim();
   const utter = new SpeechSynthesisUtterance(clean);
   utter.lang = 'pt-BR';
   utter.rate = 1;
@@ -437,12 +445,8 @@ function updateVoiceButton() {
 }
 voiceBtn.addEventListener('click', () => {
   const muted = localStorage.getItem('nandolino_voice_muted') === '1';
-  if (muted) {
-    localStorage.removeItem('nandolino_voice_muted');
-  } else {
-    speechSynthesis.cancel();
-    localStorage.setItem('nandolino_voice_muted', '1');
-  }
+  if (muted) localStorage.removeItem('nandolino_voice_muted');
+  else { speechSynthesis.cancel(); localStorage.setItem('nandolino_voice_muted', '1'); }
   updateVoiceButton();
 });
 updateVoiceButton();
@@ -452,33 +456,18 @@ const micBtn = document.getElementById('micBtn');
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SpeechRecognitionAPI) {
   const recognition = new SpeechRecognitionAPI();
-  recognition.lang = 'pt-BR';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
+  recognition.lang = 'pt-BR'; recognition.interimResults = false; recognition.maxAlternatives = 1;
   recognition.onstart = () => micBtn.classList.add('recording');
   recognition.onend = () => micBtn.classList.remove('recording');
   recognition.onerror = () => micBtn.classList.remove('recording');
-  recognition.onresult = (event) => {
-    const said = event.results[0][0].transcript;
-    input.value = said;
-    ask();
-  };
+  recognition.onresult = event => { input.value = event.results[0][0].transcript; ask(); };
+  micBtn.addEventListener('click', () => { unlockVoice(); micBtn.classList.contains('recording') ? recognition.stop() : recognition.start(); });
+} else micBtn.style.display = 'none';
 
-  micBtn.addEventListener('click', () => {
-    unlockVoice();
-    if (micBtn.classList.contains('recording')) {
-      recognition.stop();
-    } else {
-      recognition.start();
-    }
-  });
-} else {
-  micBtn.style.display = 'none';
-}
-
-sendBtn.addEventListener('click', ask);
+sendBtn.addEventListener('click', () => ask());
 input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+renderQuickActions();
+addMessage('Oi! Eu sou o Nandolino 👋 Vou te guiar pelo portfólio do Fernando. Posso mostrar o que ele faz, os projetos, as tecnologias ou te ajudar a entrar em contato.', 'bot');
 </script>
 </body>
 </html>

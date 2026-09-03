@@ -62,7 +62,7 @@
   status: <strong>'construindo'</strong>
 };</code></pre>
         </div>
-        <div class="owl-signature"><div class="coruja-container">
+        <div class="owl-signature"><div class="coruja-container" id="secretOwl" role="button" tabindex="0" aria-label="Coruja do portfólio">
 <svg class="coruja" viewbox="0 0 220 310" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <radialgradient cx="38%" cy="30%" id="bodyGrad" r="65%">
@@ -391,6 +391,8 @@
     </button>
   </div>
 
+  <script src="analytics/config.js"></script>
+  <script src="analytics/tracker.js"></script>
   <script src="js/script.js"></script>
   <script>
     (function () {
@@ -403,6 +405,7 @@
       function openPanel() {
         if (!loaded) { frame.src = 'nandolino/index.html'; loaded = true; }
         panel.classList.add('open');
+        if (window.analyticsTrack) window.analyticsTrack('nandolino_open');
       }
       function closePanel() { panel.classList.remove('open'); }
 
@@ -410,6 +413,74 @@
         panel.classList.contains('open') ? closePanel() : openPanel();
       });
       closeBtn.addEventListener('click', closePanel);
+    })();
+
+    window.addEventListener('message', function (event) {
+      var data = event.data || {};
+      if (data.type !== 'portfolio-analytics' || !window.analyticsTrack) return;
+      if (data.event !== 'whatsapp_click' && data.event !== 'project_click') return;
+      window.analyticsTrack(data.event, data.meta || {});
+    });
+
+    // Acesso privado: segure a coruja principal por 3 segundos.
+    (function () {
+      var owl = document.getElementById('secretOwl');
+      if (!owl) return;
+      var timer = null;
+      var activated = false;
+      var holding = false;
+
+      function startHold(event) {
+        if (event && typeof event.button === 'number' && event.button !== 0) return;
+        if (holding || activated) return;
+        holding = true;
+        activated = false;
+        if (event && event.cancelable && event.type.indexOf('touch') === 0) event.preventDefault();
+        owl.classList.add('secret-hold');
+        timer = setTimeout(function () {
+          timer = null;
+          holding = false;
+          activated = true;
+          owl.classList.remove('secret-hold');
+          owl.classList.add('secret-unlocked');
+          if (navigator.vibrate) navigator.vibrate(60);
+          setTimeout(function(){ window.location.assign('analytics.html'); }, 180);
+        }, 3000);
+      }
+
+      function cancelHold(event) {
+        if (activated) return;
+        if (timer) clearTimeout(timer);
+        timer = null;
+        holding = false;
+        owl.classList.remove('secret-hold');
+        if (event && event.cancelable && event.type.indexOf('touch') === 0) event.preventDefault();
+      }
+
+      if (window.PointerEvent) {
+        owl.addEventListener('pointerdown', startHold);
+        owl.addEventListener('pointerup', cancelHold);
+        owl.addEventListener('pointercancel', cancelHold);
+      } else {
+        owl.addEventListener('touchstart', startHold, { passive: false });
+        owl.addEventListener('touchend', cancelHold, { passive: false });
+        owl.addEventListener('touchcancel', cancelHold, { passive: false });
+        owl.addEventListener('mousedown', startHold);
+        owl.addEventListener('mouseup', cancelHold);
+        owl.addEventListener('mouseleave', cancelHold);
+      }
+
+      // Fallback extra para navegadores Android que cancelam Pointer Events no toque longo.
+      owl.addEventListener('touchstart', startHold, { passive: false });
+      owl.addEventListener('touchend', cancelHold, { passive: false });
+      owl.addEventListener('touchcancel', cancelHold, { passive: false });
+      owl.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+      owl.addEventListener('dragstart', function(e){ e.preventDefault(); });
+      owl.addEventListener('keydown', function(e){
+        if ((e.key === 'Enter' || e.key === ' ') && !timer && !holding) { e.preventDefault(); startHold(e); }
+      });
+      owl.addEventListener('keyup', cancelHold);
+      owl.addEventListener('click', function(e){ if (activated) e.preventDefault(); });
     })();
   </script>
 </body>

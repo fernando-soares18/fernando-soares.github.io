@@ -273,3 +273,10 @@ footer { border-top:1px solid var(--line); color:#687786; font-size:.76rem; }
   .nandolino-widget { left: 14px; bottom: 14px; }
   .nandolino-panel { width: 92vw; height: 75dvh; bottom: 72px; }
 }
+
+/* Acesso secreto do painel pela coruja principal */
+#secretOwl { cursor: default; user-select: none; -webkit-user-select: none; touch-action: none; position: relative; }
+#secretOwl::after { content: ""; position: absolute; inset: -8px; border: 2px solid transparent; border-radius: 28px; pointer-events: none; transition: .25s ease; }
+#secretOwl.secret-hold::after { border-color: rgba(56,212,119,.35); box-shadow: 0 0 24px rgba(56,212,119,.18); animation: secretPulse 1s ease-in-out infinite; }
+#secretOwl.secret-unlocked::after { border-color: var(--green); box-shadow: 0 0 32px rgba(56,212,119,.5); }
+@keyframes secretPulse { 50% { transform: scale(1.04); opacity: .65; } }
