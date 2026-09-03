@@ -46,6 +46,12 @@
   h1 span { color: var(--green); }
   .status { color: var(--muted); font-size: .85rem; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(56,212,119,.12); }
+  .key-settings {
+    margin-top: 12px; background: transparent; border: 1px solid var(--line); color: var(--muted);
+    font-size: .75rem; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-family: inherit;
+  }
+  .key-settings:hover { border-color: var(--green); color: var(--green); }
+  .key-settings.active { border-color: var(--green); color: var(--green); }
 
   .chat { height: 360px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
   .msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: .92rem; line-height: 1.5; }
@@ -152,6 +158,7 @@
       </div>
       <h1>Nandolino <span>IA</span></h1>
       <p class="status"><span class="dot"></span> assistente de Fernando Soares</p>
+      <button class="key-settings" type="button" id="keySettingsBtn" title="Configurar chave de IA (opcional)">⚙️ IA</button>
     </div>
 
     <div class="chat" id="chat">
@@ -191,11 +198,39 @@ function addMessage(text, who) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function getApiKey() {
+  const localKey = localStorage.getItem('nandolino_gemini_key');
+  if (localKey) return localKey;
+  if (window.GEMINI_API_KEY && window.GEMINI_API_KEY !== 'SUA_CHAVE_AQUI') return window.GEMINI_API_KEY;
+  return null;
+}
+
+const keySettingsBtn = document.getElementById('keySettingsBtn');
+function updateKeyButton() {
+  keySettingsBtn.classList.toggle('active', !!localStorage.getItem('nandolino_gemini_key'));
+}
+keySettingsBtn.addEventListener('click', () => {
+  const current = localStorage.getItem('nandolino_gemini_key');
+  if (current) {
+    if (confirm('Remover a chave de IA salva neste navegador?')) {
+      localStorage.removeItem('nandolino_gemini_key');
+      updateKeyButton();
+    }
+    return;
+  }
+  const key = prompt('Cole aqui sua chave de IA (Gemini). Ela fica salva só neste navegador/aparelho:');
+  if (key && key.trim()) {
+    localStorage.setItem('nandolino_gemini_key', key.trim());
+    updateKeyButton();
+  }
+});
+updateKeyButton();
+
 async function respondWithAI(question) {
   const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-goog-api-key': window.GEMINI_API_KEY },
+    headers: { 'Content-Type': 'application/json', 'X-goog-api-key': getApiKey() },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SOBRE_FERNANDO }] },
       contents: [{ parts: [{ text: question }] }]
@@ -272,7 +307,7 @@ async function ask() {
 
   nandolino.classList.add('talking');
 
-  if (window.GEMINI_API_KEY && window.GEMINI_API_KEY !== 'SUA_CHAVE_AQUI') {
+  if (getApiKey()) {
     try {
       const answer = await respondWithAI(text);
       nandolino.classList.remove('talking');
