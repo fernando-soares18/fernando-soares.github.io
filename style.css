@@ -250,7 +250,7 @@ footer { border-top:1px solid var(--line); color:#687786; font-size:.76rem; }
 .nandolino-toggle svg { width: 38px; height: 38px; }
 .nandolino-panel {
   position: absolute; left: 0; bottom: 76px;
-  width: min(92vw, 380px); height: 560px;
+  width: min(92vw, 380px); height: min(560px, 80dvh);
   background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
   box-shadow: var(--shadow); overflow: hidden;
   display: flex; flex-direction: column;
@@ -271,5 +271,5 @@ footer { border-top:1px solid var(--line); color:#687786; font-size:.76rem; }
 
 @media (max-width: 430px) {
   .nandolino-widget { left: 14px; bottom: 14px; }
-  .nandolino-panel { width: 92vw; height: 70vh; bottom: 72px; }
+  .nandolino-panel { width: 92vw; height: 75dvh; bottom: 72px; }
 }
