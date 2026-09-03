@@ -366,6 +366,7 @@ function respond(question) {
 async function ask() {
   const text = input.value.trim();
   if (!text) return;
+  unlockVoice();
   addMessage(text, 'user');
   input.value = '';
 
@@ -396,6 +397,14 @@ async function ask() {
 }
 
 /* Voz: Nandolino falando (Text-to-Speech) */
+let voiceUnlocked = false;
+function unlockVoice() {
+  if (voiceUnlocked || !('speechSynthesis' in window)) return;
+  voiceUnlocked = true;
+  const silence = new SpeechSynthesisUtterance(' ');
+  silence.volume = 0;
+  speechSynthesis.speak(silence);
+}
 function isVoiceEnabled() {
   return localStorage.getItem('nandolino_voice_muted') !== '1';
 }
@@ -452,6 +461,7 @@ if (SpeechRecognitionAPI) {
   };
 
   micBtn.addEventListener('click', () => {
+    unlockVoice();
     if (micBtn.classList.contains('recording')) {
       recognition.stop();
     } else {
