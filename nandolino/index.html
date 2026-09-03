@@ -236,7 +236,14 @@ async function respondWithAI(question) {
       contents: [{ parts: [{ text: question }] }]
     })
   });
-  if (!res.ok) throw new Error('Falha na API Gemini: ' + res.status);
+  if (!res.ok) {
+    let detail = res.status;
+    try {
+      const errData = await res.json();
+      if (errData && errData.error && errData.error.message) detail = res.status + ' - ' + errData.error.message;
+    } catch (e) { /* corpo sem JSON, mantém só o status */ }
+    throw new Error(detail);
+  }
   const data = await res.json();
   const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
     ? data.candidates[0].content.parts.map(p => p.text).join('')
@@ -315,7 +322,7 @@ async function ask() {
       return;
     } catch (err) {
       console.error(err);
-      // cai para resposta local em caso de erro/limite da API
+      addMessage('(IA indisponível agora: ' + err.message + ' — respondendo com o modo local)', 'bot');
     }
   }
 
