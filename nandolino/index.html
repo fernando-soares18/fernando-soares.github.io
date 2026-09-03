@@ -193,6 +193,7 @@
       <h1>Nandolino <span>IA</span></h1>
       <p class="status"><span class="dot"></span> assistente de Fernando Soares</p>
       <div class="header-buttons">
+          <button class="key-settings" type="button" id="keySettingsBtn" title="Configurar chave da IA" aria-label="Configurar chave da IA">🔑</button>
         <button class="key-settings" type="button" id="voiceBtn" title="Ativar/desativar voz do Nandolino">🔊 Voz</button>
       </div>
     </div>
@@ -218,6 +219,26 @@ const input = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const nandolino = document.getElementById('nandolino');
 const quickActions = document.getElementById('quickActions');
+const keySettingsBtn = document.getElementById('keySettingsBtn');
+
+keySettingsBtn.addEventListener('click', () => {
+  const currentKey = localStorage.getItem('nandolino_gemini_key');
+  if (currentKey) {
+    if (confirm('Remover a chave de IA salva neste navegador?')) {
+      localStorage.removeItem('nandolino_gemini_key');
+      keySettingsBtn.classList.remove('active');
+    }
+    return;
+  }
+
+  const key = prompt('Cole aqui sua chave de IA (Gemini). Ela fica salva somente neste navegador:');
+  if (key && key.trim()) {
+    localStorage.setItem('nandolino_gemini_key', key.trim());
+    keySettingsBtn.classList.add('active');
+  }
+});
+
+if (localStorage.getItem('nandolino_gemini_key')) keySettingsBtn.classList.add('active');
 
 const LINKS = {
   portfolio: '../index.html#projetos',
