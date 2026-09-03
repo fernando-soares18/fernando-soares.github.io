@@ -411,7 +411,12 @@ function isVoiceEnabled() {
 function speak(text) {
   nandolino.classList.remove('talking');
   if (!isVoiceEnabled() || !('speechSynthesis' in window)) return;
-  const clean = text.replace(/https?:\/\/\S+/g, '').replace(/[*_#]/g, '');
+  const clean = text
+    .replace(/https?:\/\/\S+/g, '')
+    .replace(/[*_#]/g, '')
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\uFE0F]/gu, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
   const utter = new SpeechSynthesisUtterance(clean);
   utter.lang = 'pt-BR';
   utter.rate = 1;
