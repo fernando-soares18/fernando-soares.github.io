@@ -83,10 +83,10 @@
 
   /* Mouth talking state */
   .mouth-idle { display: block; }
-  .mouth-talk { display: none; }
+  .mouth-talk { display: none; transform-origin: center; transform-box: fill-box; }
   .talking .mouth-idle { display: none; }
-  .talking .mouth-talk { display: block; animation: talk .35s steps(2) infinite; }
-  @keyframes talk { 0% { transform: scaleY(.4); } 50% { transform: scaleY(1); } 100% { transform: scaleY(.4); } }
+  .talking .mouth-talk { display: block; animation: talk .35s ease-in-out infinite; }
+  @keyframes talk { 0%, 100% { transform: scaleY(.4); } 50% { transform: scaleY(1); } }
 </style>
 </head>
 <body>
