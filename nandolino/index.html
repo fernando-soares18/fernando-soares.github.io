@@ -125,6 +125,16 @@
   .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
   @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1} }
   .privacy-note { color: var(--muted); font-size: .66rem; text-align: center; padding: 0 16px 10px; line-height: 1.35; }
+  .key-dialog { position: fixed; inset: 0; display: grid; place-items: center; padding: 16px; background: rgba(3,7,10,.72); z-index: 10; }
+  .key-dialog[hidden] { display: none; }
+  .key-dialog-box { width: min(100%, 380px); padding: 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 24px 70px rgba(0,0,0,.5); }
+  .key-dialog-box h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.05rem; margin-bottom: 7px; }
+  .key-dialog-box p { color: var(--muted); font-size: .78rem; line-height: 1.4; margin-bottom: 14px; }
+  .key-dialog-box input { width: 100%; background: rgba(255,255,255,.03); border: 1px solid var(--line); border-radius: 10px; padding: 11px 12px; color: var(--text); font-family: inherit; font-size: .88rem; }
+  .key-dialog-box input:focus { outline: none; border-color: var(--green); }
+  .key-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .key-dialog-actions button { border: 1px solid var(--line); border-radius: 9px; padding: 8px 12px; background: transparent; color: var(--muted); cursor: pointer; font-family: inherit; }
+  .key-dialog-actions .save-key { background: var(--green); border-color: var(--green); color: #07110b; font-weight: 700; }
   @media (max-width: 390px) { .header { padding-inline: 16px; } .chat { padding-inline: 14px; } .input-row { padding-inline: 12px; gap: 7px; } .input-row button { padding-inline: 14px; } }
 
 </style>
@@ -198,6 +208,18 @@
       </div>
     </div>
 
+    <div class="key-dialog" id="keyDialog" role="dialog" aria-modal="true" aria-labelledby="keyDialogTitle" hidden>
+      <div class="key-dialog-box">
+        <h2 id="keyDialogTitle">🔑 Chave da IA</h2>
+        <p>A chave fica salva somente neste navegador e nao e publicada no site.</p>
+        <input id="keyInput" type="password" placeholder="Cole sua chave Gemini aqui" autocomplete="off">
+        <div class="key-dialog-actions">
+          <button type="button" id="cancelKeyBtn">Cancelar</button>
+          <button class="save-key" type="button" id="saveKeyBtn">Salvar</button>
+        </div>
+      </div>
+    </div>
+
     <div class="chat" id="chat" aria-live="polite"></div>
 
     <div class="quick-wrap" id="quickWrap">
@@ -220,25 +242,35 @@ const sendBtn = document.getElementById('sendBtn');
 const nandolino = document.getElementById('nandolino');
 const quickActions = document.getElementById('quickActions');
 const keySettingsBtn = document.getElementById('keySettingsBtn');
+const keyDialog = document.getElementById('keyDialog');
+const keyInput = document.getElementById('keyInput');
+const cancelKeyBtn = document.getElementById('cancelKeyBtn');
+const saveKeyBtn = document.getElementById('saveKeyBtn');
 
 keySettingsBtn.addEventListener('click', () => {
   const currentKey = localStorage.getItem('nandolino_gemini_key');
   if (currentKey) {
-    if (confirm('Remover a chave de IA salva neste navegador?')) {
-      localStorage.removeItem('nandolino_gemini_key');
-      keySettingsBtn.classList.remove('active');
-    }
-    return;
+    keyInput.value = currentKey;
   }
-
-  const key = prompt('Cole aqui sua chave de IA (Gemini). Ela fica salva somente neste navegador:');
-  if (key && key.trim()) {
-    localStorage.setItem('nandolino_gemini_key', key.trim());
-    keySettingsBtn.classList.add('active');
-  }
+  keyDialog.hidden = false;
+  keyInput.focus();
 });
 
 if (localStorage.getItem('nandolino_gemini_key')) keySettingsBtn.classList.add('active');
+
+cancelKeyBtn.addEventListener('click', () => { keyDialog.hidden = true; });
+saveKeyBtn.addEventListener('click', () => {
+  const key = keyInput.value.trim();
+  if (key) {
+    localStorage.setItem('nandolino_gemini_key', key);
+    keySettingsBtn.classList.add('active');
+  } else {
+    localStorage.removeItem('nandolino_gemini_key');
+    keySettingsBtn.classList.remove('active');
+  }
+  keyInput.value = '';
+  keyDialog.hidden = true;
+});
 
 const LINKS = {
   portfolio: '../index.html#projetos',
