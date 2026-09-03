@@ -226,8 +226,10 @@ keySettingsBtn.addEventListener('click', () => {
 });
 updateKeyButton();
 
-async function respondWithAI(question) {
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function callGemini(question) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent';
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-goog-api-key': getApiKey() },
@@ -242,7 +244,9 @@ async function respondWithAI(question) {
       const errData = await res.json();
       if (errData && errData.error && errData.error.message) detail = res.status + ' - ' + errData.error.message;
     } catch (e) { /* corpo sem JSON, mantém só o status */ }
-    throw new Error(detail);
+    const err = new Error(detail);
+    err.status = res.status;
+    throw err;
   }
   const data = await res.json();
   const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
@@ -250,6 +254,18 @@ async function respondWithAI(question) {
     : null;
   if (!text) throw new Error('Resposta vazia da API');
   return text;
+}
+
+async function respondWithAI(question) {
+  try {
+    return await callGemini(question);
+  } catch (err) {
+    if (err.status === 503) {
+      await sleep(1500);
+      return await callGemini(question);
+    }
+    throw err;
+  }
 }
 
 function respond(question) {
