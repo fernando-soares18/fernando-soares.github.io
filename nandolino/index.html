@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nandolino | Assistente de Fernando Soares</title>
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0f14;
+    --panel: #121a22;
+    --line: #26313d;
+    --text: #f3f7fb;
+    --muted: #98a6b5;
+    --green: #38d477;
+    --green-soft: rgba(56, 212, 119, .10);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(circle at 80% 10%, rgba(56,212,119,.08), transparent 30%), var(--bg);
+    color: var(--text);
+    font-family: 'Josefin Sans', Arial, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+  .app {
+    width: min(100%, 460px);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,.4);
+  }
+  .header {
+    padding: 28px 24px 18px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(56,212,119,.06), transparent);
+  }
+  .avatar-wrap { display: flex; justify-content: center; margin-bottom: 12px; }
+  .avatar-wrap svg { width: 140px; height: 140px; filter: drop-shadow(0 10px 20px rgba(0,0,0,.4)); }
+  h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; }
+  h1 span { color: var(--green); }
+  .status { color: var(--muted); font-size: .85rem; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(56,212,119,.12); }
+
+  .chat { height: 360px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: .92rem; line-height: 1.5; }
+  .msg.bot { align-self: flex-start; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+  .msg.user { align-self: flex-end; background: var(--green); color: #07110b; font-weight: 600; border-bottom-right-radius: 4px; }
+
+  .input-row { display: flex; gap: 10px; padding: 16px; border-top: 1px solid var(--line); }
+  .input-row input {
+    flex: 1;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .95rem;
+  }
+  .input-row input:focus { outline: none; border-color: var(--green); }
+  .input-row button {
+    background: var(--green);
+    border: none;
+    border-radius: 12px;
+    padding: 0 20px;
+    font-weight: 700;
+    color: #07110b;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .input-row button:hover { background: #49e58a; }
+
+  /* Blink */
+  .eye-lid { transform-origin: center; transform-box: fill-box; transform: scaleY(0); opacity: 0; animation: blink 5s ease-in-out infinite; }
+  .eye-lid.right { animation-delay: .08s; }
+  @keyframes blink { 0%,86%,100% { transform: scaleY(0); opacity: 0; } 90% { transform: scaleY(1); opacity: 1; } 94% { transform: scaleY(0); opacity: 0; } }
+
+  /* Mouth talking state */
+  .mouth-idle { display: block; }
+  .mouth-talk { display: none; }
+  .talking .mouth-idle { display: none; }
+  .talking .mouth-talk { display: block; animation: talk .35s steps(2) infinite; }
+  @keyframes talk { 0% { transform: scaleY(.4); } 50% { transform: scaleY(1); } 100% { transform: scaleY(.4); } }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="avatar-wrap">
+        <svg id="nandolino" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="skin" cx="40%" cy="30%" r="70%">
+              <stop offset="0%" stop-color="#e0a878"/>
+              <stop offset="60%" stop-color="#c98f61"/>
+              <stop offset="100%" stop-color="#9c6a41"/>
+            </radialGradient>
+            <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3a4650"/>
+              <stop offset="100%" stop-color="#20272d"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Ombros/camisa -->
+          <path d="M30 200 Q100 150 170 200 L170 220 L30 220 Z" fill="url(#shirt)"/>
+
+          <!-- Pescoço -->
+          <rect x="82" y="120" width="36" height="30" fill="#b57e54"/>
+
+          <!-- Cabeça careca -->
+          <ellipse cx="100" cy="90" rx="52" ry="58" fill="url(#skin)"/>
+
+          <!-- Brilho da careca -->
+          <ellipse cx="82" cy="55" rx="20" ry="14" fill="#ffffff" opacity="0.12"/>
+
+          <!-- Orelhas -->
+          <ellipse cx="46" cy="95" rx="8" ry="12" fill="#c98f61"/>
+          <ellipse cx="154" cy="95" rx="8" ry="12" fill="#c98f61"/>
+
+          <!-- Sobrancelhas -->
+          <path d="M68 78 Q80 70 92 76" fill="none" stroke="#3a2415" stroke-width="4" stroke-linecap="round"/>
+          <path d="M108 76 Q120 70 132 78" fill="none" stroke="#3a2415" stroke-width="4" stroke-linecap="round"/>
+
+          <!-- Olhos -->
+          <g>
+            <ellipse cx="80" cy="92" rx="9" ry="10" fill="#2a1a10"/>
+            <circle cx="82" cy="89" r="3" fill="white" opacity="0.8"/>
+            <ellipse class="eye-lid left" cx="80" cy="92" rx="9" ry="10" fill="#c98f61"/>
+          </g>
+          <g>
+            <ellipse cx="120" cy="92" rx="9" ry="10" fill="#2a1a10"/>
+            <circle cx="122" cy="89" r="3" fill="white" opacity="0.8"/>
+            <ellipse class="eye-lid right" cx="120" cy="92" rx="9" ry="10" fill="#c98f61"/>
+          </g>
+
+          <!-- Nariz -->
+          <path d="M96 100 Q92 112 100 116 Q108 112 104 100" fill="none" stroke="#7a4f30" stroke-width="2.5" stroke-linecap="round"/>
+
+          <!-- Barba leve -->
+          <path d="M62 108 Q100 138 138 108 Q136 130 100 136 Q64 130 62 108Z" fill="#241812" opacity="0.35"/>
+
+          <!-- Boca parada -->
+          <path class="mouth-idle" d="M84 122 Q100 128 116 122" fill="none" stroke="#5a3520" stroke-width="3" stroke-linecap="round"/>
+          <!-- Boca falando (alternável via JS) -->
+          <ellipse class="mouth-talk" cx="100" cy="123" rx="12" ry="6" fill="#5a3520"/>
+        </svg>
+      </div>
+      <h1>Nandolino <span>IA</span></h1>
+      <p class="status"><span class="dot"></span> assistente de Fernando Soares</p>
+    </div>
+
+    <div class="chat" id="chat">
+      <div class="msg bot">Oi! Eu sou o Nandolino 👋 Pergunta sobre o Fernando: projetos, tecnologias, formação, experiência, disponibilidade ou contato!</div>
+    </div>
+
+    <div class="input-row">
+      <input type="text" id="userInput" placeholder="Digite sua pergunta..." autocomplete="off">
+      <button id="sendBtn">Enviar</button>
+    </div>
+  </div>
+
+<script src="config.js" onerror="console.log('config.js não encontrado — usando respostas locais.')"></script>
+<script>
+const chat = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const nandolino = document.getElementById('nandolino');
+
+const SOBRE_FERNANDO = `Você é o Nandolino, assistente virtual e simpático de Fernando Soares Da Rosa, um Desenvolvedor Front-end.
+Informações sobre o Fernando:
+- Atua como Desenvolvedor Front-end autônomo desde 2021 (5+ anos), atualmente disponível para novos projetos.
+- Mora em Novo Hamburgo, Rio Grande do Sul, Brasil.
+- Formação em programação Front-end pela Dev Club.
+- Tecnologias: HTML5, CSS3, JavaScript, PHP básico, Git/GitHub, deploy em GitHub Pages e Netlify.
+- Projeto real para cliente: site do Dr. Charles Genehr (drcharlesgenehr.com.br) — institucional, artigos, eBooks, painel administrativo e integração com WhatsApp.
+- Projetos de estudo: Netflix Clone (responsividade), Cronômetro (lógica e interação), Calculadora Interativa (histórico, atalhos de teclado).
+- Portfólio: https://fernando-soares18.github.io/fernando-soares.github.io/
+- Contato: WhatsApp wa.me/5551999493155, LinkedIn linkedin.com/in/fernando-soares-da-rosa-programador519994931555, GitHub github.com/fernando-soares18
+Responda sempre em português do Brasil, de forma breve (máximo 3 frases), simpática e com no máximo 1 emoji. Se perguntarem algo fora desse contexto, responda com bom humor que você só sabe sobre o Fernando.`;
+
+function addMessage(text, who) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function respondWithAI(question) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-goog-api-key': window.GEMINI_API_KEY },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: SOBRE_FERNANDO }] },
+      contents: [{ parts: [{ text: question }] }]
+    })
+  });
+  if (!res.ok) throw new Error('Falha na API Gemini: ' + res.status);
+  const data = await res.json();
+  const text = data && data.candidates && data.candidates[0] && data.candidates[0].content
+    ? data.candidates[0].content.parts.map(p => p.text).join('')
+    : null;
+  if (!text) throw new Error('Resposta vazia da API');
+  return text;
+}
+
+function respond(question) {
+  const q = question.toLowerCase();
+
+  if (q.includes('projeto') && q.includes('charles')) {
+    return 'O projeto do Dr. Charles Genehr foi um site profissional completo: institucional, artigos, eBooks, painel admin e integração com WhatsApp. Site: drcharlesgenehr.com.br 🩺';
+  }
+  if (q.includes('projeto') && (q.includes('netflix'))) {
+    return 'O Netflix Clone foi um estudo de interface pra praticar estrutura, composição visual e responsividade com HTML, CSS e JavaScript 🎬';
+  }
+  if (q.includes('cronômetro') || q.includes('cronometro')) {
+    return 'O Cronômetro é um projeto de lógica e manipulação de interface, com controles simples e resposta em tempo real ⏱️';
+  }
+  if (q.includes('calculadora')) {
+    return 'A Calculadora Interativa tem histórico, atalhos de teclado, porcentagem, troca de sinal e tratamento de erros — um projeto funcional completo 🧮';
+  }
+  if (q.includes('portfólio') || q.includes('portfolio')) {
+    return 'O portfólio completo do Fernando está em https://fernando-soares18.github.io/fernando-soares.github.io/ — dá uma olhada nos projetos! 💻';
+  }
+  if (q.includes('tecnologia') || q.includes('stack') || q.includes('linguagem') || q.includes('ferramenta')) {
+    return 'Fernando trabalha com HTML5, CSS3, JavaScript, PHP básico, Git/GitHub e faz deploy em GitHub Pages e Netlify. O foco principal é Front-end 🛠️';
+  }
+  if (q.includes('experiência') || q.includes('experiencia') || q.includes('trabalha') || q.includes('atua')) {
+    return 'Fernando atua como Desenvolvedor Front-end autônomo desde 2021 (5+ anos). Já entregou um projeto real completo para cliente (site do Dr. Charles Genehr) e mantém estudos constantes com projetos próprios, sempre evoluindo em organização de código, responsividade e publicação de sites 📈';
+  }
+  if (q.includes('o que') && (q.includes('faz') || q.includes('fasc') || q.includes('fsc'))) {
+    return 'Fernando cria interfaces web modernas, responsivas e fáceis de usar. No dia a dia ele cuida de tudo: estrutura em HTML/CSS, interatividade com JavaScript, pequenas integrações em PHP, organização de código no Git e publicação do site (GitHub Pages, Netlify ou hospedagem própria). Também já fez painel administrativo, SEO básico e ajustes de hospedagem em projeto real 💻';
+  }
+  if (q.includes('formação') || q.includes('formacao') || q.includes('curso') || q.includes('estudou') || q.includes('dev club')) {
+    return 'Fernando se formou em programação Front-end pela Dev Club, e está sempre estudando e evoluindo na área 🎓';
+  }
+  if (q.includes('onde') && (q.includes('mora') || q.includes('fica') || q.includes('localiza'))) {
+    return 'Fernando é de Novo Hamburgo, Rio Grande do Sul, Brasil 📍';
+  }
+  if (q.includes('disponív') || q.includes('disponiv') || q.includes('freelance') || q.includes('vaga') || q.includes('emprego')) {
+    return 'Sim! Fernando está disponível para novos projetos e oportunidades como Desenvolvedor Front-end 🚀';
+  }
+  if (q.includes('contato') || q.includes('contratar') || q.includes('whatsapp') || q.includes('falar com')) {
+    return 'Você pode chamar o Fernando direto pelo WhatsApp: wa.me/5551999493155, ou pelo LinkedIn dele 📲';
+  }
+  if (q.includes('linkedin')) {
+    return 'O LinkedIn do Fernando: linkedin.com/in/fernando-soares-da-rosa-programador519994931555 💼';
+  }
+  if (q.includes('github')) {
+    return 'O GitHub do Fernando: github.com/fernando-soares18 — lá tem os códigos dos projetos e estudos dele 🧑‍💻';
+  }
+  if (q.includes('nome') && (q.includes('completo') || q.includes('fernando'))) {
+    return 'O nome completo dele é Fernando Soares Da Rosa 😊';
+  }
+  if (q.includes('quem é você') || q.includes('quem e voce') || q.includes('nandolino')) {
+    return 'Eu sou o Nandolino, o assistente virtual do Fernando! Estou aqui pra contar sobre ele, os projetos e como te ajudar a entrar em contato 😄';
+  }
+  return 'Boa pergunta! Ainda estou aprendendo sobre isso, mas você pode perguntar sobre os projetos do Fernando, tecnologias, formação, disponibilidade ou como entrar em contato 😊';
+}
+
+async function ask() {
+  const text = input.value.trim();
+  if (!text) return;
+  addMessage(text, 'user');
+  input.value = '';
+
+  nandolino.classList.add('talking');
+
+  if (window.GEMINI_API_KEY && window.GEMINI_API_KEY !== 'SUA_CHAVE_AQUI') {
+    try {
+      const answer = await respondWithAI(text);
+      nandolino.classList.remove('talking');
+      addMessage(answer, 'bot');
+      return;
+    } catch (err) {
+      console.error(err);
+      // cai para resposta local em caso de erro/limite da API
+    }
+  }
+
+  setTimeout(() => {
+    nandolino.classList.remove('talking');
+    addMessage(respond(text), 'bot');
+  }, 900);
+}
+
+sendBtn.addEventListener('click', ask);
+input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
+</script>
+</body>
+</html>

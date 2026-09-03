@@ -236,3 +236,40 @@ footer { border-top:1px solid var(--line); color:#687786; font-size:.76rem; }
 @media (max-width: 430px) {
   .brand-name{font-size:.92rem}.brand-mark{width:35px;height:35px}.hero-actions .btn{width:100%}.availability{font-size:.7rem}.hero-visual{min-height:350px}.code-panel{width:100%}.code-panel pre{font-size:.68rem}.owl-signature .coruja-container{width:125px!important}.floating-tag{font-size:.67rem}.portrait-frame{min-height:340px}.medical-brand span{display:none}.medical-copy h3{font-size:1.85rem}.medical-cards span{width:58px;height:85px}.project-image,.calc-mini{height:210px}
 }
+
+/* Widget Nandolino */
+.nandolino-widget { position: fixed; left: 22px; bottom: 22px; z-index: 60; }
+.nandolino-toggle {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--panel); border: 1px solid var(--line);
+  box-shadow: 0 14px 32px rgba(0,0,0,.4);
+  cursor: pointer; display: grid; place-items: center;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.nandolino-toggle:hover { transform: translateY(-3px); border-color: var(--green); }
+.nandolino-toggle svg { width: 38px; height: 38px; }
+.nandolino-panel {
+  position: absolute; left: 0; bottom: 76px;
+  width: min(92vw, 380px); height: 560px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+  box-shadow: var(--shadow); overflow: hidden;
+  display: flex; flex-direction: column;
+  opacity: 0; visibility: hidden; transform: translateY(12px);
+  transition: opacity .2s ease, transform .2s ease, visibility .2s;
+}
+.nandolino-panel.open { opacity: 1; visibility: visible; transform: none; }
+.nandolino-panel-top {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px; border-bottom: 1px solid var(--line);
+  font-size: .82rem; font-weight: 600; color: #c7d0d9;
+}
+.nandolino-panel-top button {
+  background: transparent; border: none; color: #98a6b5; cursor: pointer; font-size: 1rem;
+}
+.nandolino-panel-top button:hover { color: var(--green); }
+.nandolino-panel iframe { border: 0; flex: 1; width: 100%; background: var(--bg); }
+
+@media (max-width: 430px) {
+  .nandolino-widget { left: 14px; bottom: 14px; }
+  .nandolino-panel { width: 92vw; height: 70vh; bottom: 72px; }
+}
