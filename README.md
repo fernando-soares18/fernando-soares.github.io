@@ -1,69 +1,76 @@
-# Fernando Soares | Portfólio
+# Fernando Soares | Portfólio — Nandolino Skynet 2.1
 
-Portfólio de Fernando Soares, desenvolvedor Front-end. Aqui estão reunidos projetos de estudo e um projeto real desenvolvido para cliente, com foco em interfaces responsivas, organização visual e experiência do usuário.
+Portfólio de Fernando Soares com projetos Front-end, Code Snake, calculadora e o Nandolino: um assistente integrado a IA local através de n8n + Ollama + Cloudflare Tunnel.
 
 ## Acesse
 
-- [Ver portfólio publicado](https://fernando-soares18.github.io/fernando-soares.github.io/)
-- [Ver projeto Dr. Charles Genehr](https://drcharlesgenehr.com.br)
-- [GitHub](https://github.com/fernando-soares18)
+- Portfólio: https://fernando-soares18.github.io/fernando-soares.github.io/
+- Projeto Dr. Charles Genehr: https://drcharlesgenehr.com.br
+- GitHub: https://github.com/fernando-soares18
 
-## Projeto em destaque
+## Nandolino 2.1 — arquitetura
 
-### Dr. Charles Genehr
+Fluxo atual:
 
-Site profissional desenvolvido para apresentar o trabalho médico, organizar conteúdos e facilitar o contato com pacientes.
+`GitHub Pages -> HTTPS Cloudflare Tunnel -> n8n -> AI Agent -> Ollama/Qwen -> Respond to Webhook -> Portfólio`
 
-O projeto inclui:
+O navegador envia POST JSON no formato:
 
-- Página institucional responsiva
-- Artigos e biblioteca de eBooks
-- Painel administrativo
-- Integração com WhatsApp
-- Publicação e manutenção do site
-
-## Outros projetos
-
-- Netflix Clone: estudo de interface e responsividade
-- Cronômetro: lógica e manipulação de interface em JavaScript
-- Calculadora Interativa: histórico, atalhos de teclado, porcentagem e tratamento de erros
-
-## Tecnologias
-
-HTML5, CSS3, JavaScript, PHP, JSON, Git e GitHub Pages.
-
-## Estrutura
-
-```text
-.
-├── index.html       # Página principal do portfólio
-├── calculadora.html # Projeto da calculadora
-├── style.css        # Estilos principais
-├── css/             # Estilos de projetos antigos
-├── js/              # Scripts de interação
-├── img/             # Imagens e mídias dos projetos
-└── .github/         # Configuração de publicação
+```json
+{
+  "message": "pergunta do visitante",
+  "sessionId": "uuid",
+  "source": "portfolio",
+  "language": "pt-BR",
+  "page": "url"
+}
 ```
 
-## Executar localmente
+O n8n devolve:
 
-Abra `index.html` no navegador ou use uma extensão de servidor local no VS Code para visualizar o portfólio.
+```json
+{"reply":"resposta do Nandolino"}
+```
 
-## Nandolino e segurança
-O Nandolino funciona em modo local com respostas contextuais sobre o portfólio e fluxo para WhatsApp. Não publique chaves de API no HTML/JavaScript do GitHub Pages. Para integrar Gemini ou outra IA externa em produção, use um backend/serverless como proxy e mantenha a chave apenas no servidor.
+### Configuração do endpoint
 
-## Painel secreto de métricas (coruja)
+O arquivo `nandolino/config.js` concentra a URL do webhook. Não existe chave privada no front-end.
 
-A coruja grande da tela inicial agora possui um gesto secreto: **segure por 3 segundos** para abrir `analytics.html`.
-O gesto é apenas um atalho; o painel exige autenticação no Supabase.
+O endereço `trycloudflare.com` configurado no ZIP é um **Quick Tunnel temporário**. Quando ele mudar, edite somente `endpoint` em `nandolino/config.js`.
 
-### Ativação do Analytics
-1. Crie um projeto gratuito no Supabase.
-2. Abra o SQL Editor e execute `analytics/setup.sql`.
-3. Em Authentication, crie manualmente o usuário administrador (e-mail + senha) e desative novos cadastros públicos.
-4. Em `analytics/config.js`, preencha somente `supabaseUrl` e a chave **anon/publishable** do projeto.
-5. Publique os arquivos no GitHub Pages.
+Para subir o túnel atual usando HTTP/2:
 
-**Nunca use a chave `service_role` no portfólio.** A chave anon/publishable pode ficar no front-end porque as permissões reais são controladas pelo RLS configurado em `setup.sql`.
+```powershell
+cloudflared tunnel --protocol http2 --url http://localhost:5678
+```
 
-O painel mostra: visitantes únicos estimados por navegador, visualizações, pessoas que abriram o Nandolino, cliques no WhatsApp, taxa de conversão e projetos mais clicados.
+Depois mantenha rodando:
+
+1. Ollama com o modelo usado pelo fluxo.
+2. n8n com o workflow publicado.
+3. cloudflared com o túnel ativo.
+
+O timeout do front-end está em 120 segundos porque uma IA local pode levar dezenas de segundos para responder em hardware doméstico. Se o backend cair, o Nandolino usa respostas locais como fallback.
+
+## Segurança
+
+- Nenhuma chave de IA é publicada no GitHub Pages.
+- O texto retornado pela IA é tratado como texto, não como HTML executável.
+- Links de ações aceitam apenas HTTPS ou caminhos relativos.
+- A entrada do chat é limitada a 600 caracteres no front-end.
+- Para produção, aplique rate limit no n8n e restrinja CORS ao domínio do portfólio.
+- Para URL estável, substitua o Quick Tunnel por um Cloudflare Named Tunnel.
+
+## Projetos e recursos
+
+- Dr. Charles Genehr: projeto real para cliente.
+- Netflix Clone.
+- Cronômetro.
+- Calculadora Interativa.
+- Code Snake com controles por teclado, mouse/toque e recorde persistente.
+- Nandolino com voz, reconhecimento de fala, atalhos, fallback local e IA via webhook.
+- Painel opcional de métricas com Supabase.
+
+## Analytics
+
+O painel secreto continua em `analytics.html`. Para ativar, configure `analytics/config.js` com URL e chave anon/publishable do Supabase e rode `analytics/setup.sql`. Nunca use `service_role` no front-end.

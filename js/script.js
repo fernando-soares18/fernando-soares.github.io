@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const symbols = ['{}', '</>', '()', '[]', ';', '=>', '#'];
   const COLS = 20, ROWS = 12;
   let snake, food, dir, nextDir, score = 0, best = 0, timer = null, running = false, pointerStart = null;
+  try { best = Math.max(0, Number(localStorage.getItem('code_snake_best')) || 0); } catch (_) {}
+  bestEl.textContent = String(best);
 
   function reset() {
     snake = [{x:8,y:6},{x:7,y:6},{x:6,y:6}];
@@ -84,7 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
     dir = nextDir; const h = {x:snake[0].x+dir.x,y:snake[0].y+dir.y};
     if(h.x<0||h.x>=COLS||h.y<0||h.y>=ROWS||snake.some(p=>p.x===h.x&&p.y===h.y)){ gameOver(); return; }
     snake.unshift(h);
-    if(h.x===food.x&&h.y===food.y){ score+=10; scoreEl.textContent=String(score); best=Math.max(best,score); bestEl.textContent=String(best); placeFood(); }
+    if(h.x===food.x&&h.y===food.y){ score+=10; scoreEl.textContent=String(score); const previousBest = best; best=Math.max(best,score); bestEl.textContent=String(best);
+      if (best !== previousBest) { try { localStorage.setItem('code_snake_best', String(best)); } catch (_) {} }
+      placeFood(); }
     else snake.pop();
     draw(); schedule();
   }

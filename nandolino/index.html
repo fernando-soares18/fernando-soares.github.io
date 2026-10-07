@@ -17,6 +17,7 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
+    height: 100dvh;
     min-height: 100vh;
     min-height: 100dvh;
     background: radial-gradient(circle at 80% 10%, rgba(56,212,119,.08), transparent 30%), var(--bg);
@@ -25,11 +26,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 8px;
   }
   .app {
     width: min(100%, 460px);
-    max-height: 94dvh;
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 24px;
@@ -59,7 +62,7 @@
   .key-settings.active { border-color: var(--green); color: var(--green); }
   .header-buttons { display: flex; justify-content: center; gap: 8px; margin-top: 8px; }
 
-  .chat { flex: 1 1 auto; min-height: 90px; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .chat { flex: 1 1 0; min-height: 0; overflow-y: auto; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
   .msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: .92rem; line-height: 1.5; }
   .msg.bot { align-self: flex-start; background: rgba(255,255,255,.04); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
   .msg.user { align-self: flex-end; background: var(--green); color: #07110b; font-weight: 600; border-bottom-right-radius: 4px; }
@@ -124,10 +127,32 @@
   .typing i { width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: typingDot 1s infinite ease-in-out; }
   .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
   @keyframes typingDot { 0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1} }
-  .privacy-note { color: var(--muted); font-size: .66rem; text-align: center; padding: 0 16px 10px; line-height: 1.35; }
   @media (max-width: 390px) { .header { padding-inline: 16px; } .chat { padding-inline: 14px; } .input-row { padding-inline: 12px; gap: 7px; } .input-row button { padding-inline: 14px; } }
 
+  .status.thinking .dot { background: #f4c15d; box-shadow: 0 0 0 4px rgba(244,193,93,.12); }
+  .status.online .dot { background: var(--green); box-shadow: 0 0 0 4px rgba(56,212,119,.12); }
+  .status.local .dot { background: #8fa0b2; box-shadow: 0 0 0 4px rgba(143,160,178,.10); }
+  .status.error .dot { background: #ff7777; box-shadow: 0 0 0 4px rgba(255,119,119,.10); }
+  .msg { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .msg .msg-actions { white-space: normal; }
+  .input-row input:disabled, .input-row button:disabled { opacity: .58; cursor: wait; }
+  @media (max-height: 600px) {
+    .header { padding: 8px 16px 6px; }
+    .avatar-wrap { margin-bottom: 2px; }
+    .avatar-wrap svg { width: 52px; height: 52px; }
+    h1 { font-size: 1.1rem; }
+    .header-buttons { margin-top: 4px; }
+    .chat { padding: 8px 12px; gap: 8px; }
+    .quick-wrap { padding: 0 12px 6px; }
+    .quick-label { margin-bottom: 4px; }
+    .quick-action { padding: 5px 8px; }
+    .input-row { padding: 8px 10px; gap: 6px; }
+    .input-row input { padding: 10px; }
+    .input-row button { padding-inline: 12px; }
+    #micBtn { padding-inline: 8px; }
+  }
 </style>
+<script src="config.js"></script>
 </head>
 <body>
   <div class="app">
@@ -191,7 +216,7 @@
         </svg>
       </div>
       <h1>Nandolino <span>IA</span></h1>
-      <p class="status"><span class="dot"></span> assistente de Fernando Soares</p>
+      <p class="status" id="aiStatus"><span class="dot" id="aiDot"></span><span id="aiStatusText">assistente de Fernando Soares</span></p>
       <div class="header-buttons">
         <button class="key-settings" type="button" id="voiceBtn" title="Ativar/desativar voz do Nandolino">🔊 Voz</button>
       </div>
@@ -206,10 +231,9 @@
 
     <div class="input-row">
       <button id="micBtn" type="button" title="Falar com o Nandolino">🎤</button>
-      <input type="text" id="userInput" placeholder="Digite sua pergunta..." autocomplete="off">
-      <button id="sendBtn">Enviar</button>
+      <input type="text" id="userInput" placeholder="Digite sua pergunta..." autocomplete="off" maxlength="600" aria-label="Pergunta para o Nandolino">
+      <button id="sendBtn" type="button">Enviar</button>
     </div>
-    <p class="privacy-note">Nandolino usa informações públicas deste portfólio. Nenhuma chave de API fica exposta nesta página.</p>
   </div>
 
 <script>
@@ -218,6 +242,9 @@ const input = document.getElementById('userInput');
 const sendBtn = document.getElementById('sendBtn');
 const nandolino = document.getElementById('nandolino');
 const quickActions = document.getElementById('quickActions');
+const aiStatus = document.getElementById('aiStatus');
+const aiStatusText = document.getElementById('aiStatusText');
+const micBtn = document.getElementById('micBtn');
 
 const LINKS = {
   portfolio: '../index.html#projetos',
@@ -229,28 +256,48 @@ const LINKS = {
 
 
 
-/* Nandolino 2.0 — ponte segura para n8n/Azure.
-   Configure apenas a URL pública do webhook/proxy. NUNCA coloque chave Azure aqui. */
+/* Nandolino 2.1 — ponte segura para n8n + Ollama via Cloudflare Tunnel.
+   Configure apenas a URL pública do webhook. Nenhuma chave privada deve ficar aqui. */
+const REMOTE_CONFIG = window.NANDOLINO_CONFIG || {};
 const NANDOLINO_AI = {
-  enabled: true,
-  endpoint: '', // Ex.: https://SEU-N8N/webhook/nandolino-chat
-  timeoutMs: 12000,
+  enabled: REMOTE_CONFIG.enabled !== false,
+  endpoint: String(REMOTE_CONFIG.endpoint || '').trim(),
+  timeoutMs: Number(REMOTE_CONFIG.timeoutMs) > 0 ? Number(REMOTE_CONFIG.timeoutMs) : 120000,
   visitorId: localStorage.getItem('nandolino_visitor_id') || (() => {
     const id = (crypto.randomUUID ? crypto.randomUUID() : 'visitor-' + Date.now() + '-' + Math.random().toString(16).slice(2));
     localStorage.setItem('nandolino_visitor_id', id); return id;
   })()
 };
 
+function setAIStatus(state, label) {
+  aiStatus.classList.remove('thinking', 'online', 'local', 'error');
+  if (state) aiStatus.classList.add(state);
+  aiStatusText.textContent = label;
+}
+
+function safeActionHref(value) {
+  const href = String(value || '').trim();
+  if (!href) return null;
+  if (/^https:\/\//i.test(href) || /^(\.\.?\/|#)/.test(href)) return href;
+  return null;
+}
+
 async function askRemoteAI(message) {
-  if (!NANDOLINO_AI.enabled || !NANDOLINO_AI.endpoint) return null;
+  if (!NANDOLINO_AI.enabled || !NANDOLINO_AI.endpoint) {
+    setAIStatus('local', 'modo local • IA externa não configurada');
+    return null;
+  }
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), NANDOLINO_AI.timeoutMs);
+  setAIStatus('thinking', 'Nandolino está pensando…');
+
   try {
     const response = await fetch(NANDOLINO_AI.endpoint, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        message,
+        message: String(message).slice(0, 600),
         sessionId: NANDOLINO_AI.visitorId,
         source: 'portfolio',
         language: 'pt-BR',
@@ -258,15 +305,23 @@ async function askRemoteAI(message) {
       }),
       signal: controller.signal
     });
+
     if (!response.ok) throw new Error('HTTP ' + response.status);
-    const data = await response.json();
+    const type = response.headers.get('content-type') || '';
+    const data = type.includes('application/json') ? await response.json() : { reply: await response.text() };
     const text = data.reply || data.answer || data.output || data.message;
     if (!text || typeof text !== 'string') throw new Error('Resposta inválida');
+
+    setAIStatus('online', 'IA local online • n8n + Ollama');
     return { text, actions: Array.isArray(data.actions) ? data.actions : [] };
   } catch (err) {
+    const timedOut = err && err.name === 'AbortError';
+    setAIStatus('local', timedOut ? 'IA demorou • usando respostas locais' : 'IA offline • usando respostas locais');
     console.warn('Nandolino AI indisponível; usando modo local.', err);
     return null;
-  } finally { clearTimeout(timer); }
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 const QUICK = [
@@ -274,7 +329,8 @@ const QUICK = [
   ['Projetos', 'Quais são os projetos do Fernando?'],
   ['Tecnologias', 'Quais tecnologias o Fernando usa?'],
   ['Projeto Dr. Charles', 'Me conte sobre o projeto do Dr. Charles'],
-  ['Por que contratar?', 'Por que eu deveria contratar o Fernando?']
+  ['Por que contratar?', 'Por que eu deveria contratar o Fernando?'],
+  ['Como você funciona?', 'Como o Nandolino funciona?']
 ];
 
 let lastTopic = 'geral';
@@ -283,9 +339,6 @@ function normalizeText(text) {
   return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function esc(text) {
-  return String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
 
 function whatsappUrl(topic = lastTopic) {
   const messages = {
@@ -301,23 +354,23 @@ function whatsappUrl(topic = lastTopic) {
 function addMessage(content, who = 'bot', actions = []) {
   const div = document.createElement('div');
   div.className = 'msg ' + who;
-  if (who === 'user') {
-    div.textContent = content;
-  } else {
-    div.innerHTML = content;
+  div.textContent = content;
+  if (who !== 'user') {
     if (actions.length) {
       const row = document.createElement('div');
       row.className = 'msg-actions';
       actions.forEach(action => {
+        const href = safeActionHref(action && action.href);
+        if (!href) return;
         const a = document.createElement('a');
         a.className = 'msg-action' + (action.secondary ? ' secondary' : '');
-        a.href = action.href;
-        a.textContent = action.label;
-        if (/^https?:/.test(action.href)) { a.target = '_blank'; a.rel = 'noopener'; }
+        a.href = href;
+        a.textContent = String(action.label || 'Abrir');
+        if (/^https:\/\//i.test(href)) { a.target = '_blank'; a.rel = 'noopener'; }
         a.addEventListener('click', () => {
           try {
-            const isWhats = /wa\.me|whatsapp/i.test(action.href);
-            const isProject = /drcharles|netlify|calculadora|#projetos/i.test(action.href);
+            const isWhats = /wa\.me|whatsapp/i.test(href);
+            const isProject = /drcharles|netlify|calculadora|#projetos/i.test(href);
             if (isWhats || isProject) {
               parent.postMessage({
                 type: 'portfolio-analytics',
@@ -393,10 +446,18 @@ function answerFor(question) {
     };
   }
 
+  if (/nandolino|como voce funciona|ia local|ollama|n8n|cloudflare|skynet/.test(q)) {
+    lastTopic = 'tecnologias';
+    return {
+      text: 'O próprio Nandolino é um projeto do Fernando: a interface roda no portfólio, envia a pergunta por webhook ao n8n, o AI Agent usa um modelo Qwen local pelo Ollama e a resposta volta pela internet através de um Cloudflare Tunnel. Se a IA local estiver desligada, eu continuo com um modo de respostas locais.',
+      actions: [{label:'Ver GitHub', href:LINKS.github, secondary:true}]
+    };
+  }
+
   if (/tecnologia|stack|linguagem|html|css|javascript|php|git|github|ferramenta/.test(q)) {
     lastTopic = 'tecnologias';
     return {
-      text: 'Fernando trabalha principalmente com HTML5, CSS3 e JavaScript, além de PHP básico, Git/GitHub e publicação em GitHub Pages, Netlify e hospedagem tradicional. O foco é transformar o layout em uma experiência responsiva e funcional.',
+      text: 'Fernando trabalha com HTML5, CSS3 e JavaScript, além de Git/GitHub, PHP básico, deploy web e integrações com n8n, Ollama e webhooks. O foco é unir interface responsiva com automação e funcionalidades reais.',
       actions: [{label:'Ver GitHub', href:LINKS.github, secondary:true}]
     };
   }
@@ -411,12 +472,12 @@ function answerFor(question) {
 
   if (/formacao|curso|estudou|dev club/.test(q)) {
     lastTopic = 'geral';
-    return { text: 'Fernando tem formação em programação Front-end pela Dev Club e segue evoluindo com prática constante em projetos próprios e trabalhos reais.' };
+    return { text: 'Fernando estuda desenvolvimento Front-end com apoio do Dev Club e segue evoluindo com prática constante em projetos próprios e trabalhos reais.' };
   }
 
   if (/experiencia|experiencia profissional|atua|tempo|desde quando/.test(q)) {
     lastTopic = 'geral';
-    return { text: 'Fernando atua com desenvolvimento Front-end desde 2021. Além dos estudos e projetos próprios, já realizou uma entrega profissional completa para cliente, o que trouxe experiência com publicação, manutenção e necessidades reais de negócio.' };
+    return { text: 'Fernando vem construindo experiência em desenvolvimento Front-end por meio de estudos, projetos próprios e uma entrega profissional completa para cliente, com publicação, manutenção e necessidades reais de negócio.' };
   }
 
   if (/disponivel|freelance|vaga|oportunidade|emprego/.test(q)) {
@@ -438,20 +499,42 @@ function answerFor(question) {
   };
 }
 
+let busy = false;
+function setBusy(on) {
+  busy = on;
+  input.disabled = false;
+  sendBtn.disabled = on;
+  if (micBtn) micBtn.disabled = on;
+  sendBtn.textContent = on ? 'Pensando…' : 'Enviar';
+}
+
 async function ask(forcedText) {
-  const text = (forcedText || input.value).trim();
+  if (busy) return;
+  const text = String(forcedText || input.value).trim().slice(0, 600);
   if (!text) return;
+
   unlockVoice();
   addMessage(text, 'user');
   input.value = '';
   nandolino.classList.add('talking');
   const typing = showTyping();
-  await new Promise(r => setTimeout(r, 320));
-  const remoteAnswer = await askRemoteAI(text);
-  typing.remove();
-  const answer = remoteAnswer || answerFor(text);
-  addMessage(answer.text, 'bot', answer.actions || []);
-  speak(answer.text.replace(/<[^>]+>/g, ''));
+  setBusy(true);
+
+  try {
+    const remoteAnswer = await askRemoteAI(text);
+    const answer = remoteAnswer || answerFor(text);
+    typing.remove();
+    addMessage(answer.text, 'bot', answer.actions || []);
+    speak(answer.text);
+  } catch (err) {
+    typing.remove();
+    setAIStatus('error', 'erro temporário • tente novamente');
+    addMessage('Tive um problema para responder agora. Tente novamente em alguns segundos.', 'bot');
+    console.error(err);
+  } finally {
+    setBusy(false);
+    if (!input.disabled) input.focus();
+  }
 }
 
 /* Voz: Nandolino falando (Text-to-Speech) */
@@ -495,7 +578,6 @@ voiceBtn.addEventListener('click', () => {
 updateVoiceButton();
 
 /* Voz: falar com o Nandolino (Speech-to-Text) */
-const micBtn = document.getElementById('micBtn');
 const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SpeechRecognitionAPI) {
   const recognition = new SpeechRecognitionAPI();
@@ -510,7 +592,8 @@ if (SpeechRecognitionAPI) {
 sendBtn.addEventListener('click', () => ask());
 input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(); });
 renderQuickActions();
-addMessage('Oi! Eu sou o Nandolino 👋 Vou te guiar pelo portfólio do Fernando. Posso mostrar o que ele faz, os projetos, as tecnologias ou te ajudar a entrar em contato.', 'bot');
+setAIStatus(NANDOLINO_AI.endpoint ? 'local' : 'local', NANDOLINO_AI.endpoint ? 'IA local configurada • pronta para responder' : 'modo local • IA externa não configurada');
+addMessage('Oi! Eu sou o Nandolino 👋 Vou te guiar pelo portfólio do Fernando. Posso mostrar o que ele faz, os projetos, as tecnologias ou te ajudar a entrar em contato. Quando a IA local estiver ligada, eu também respondo perguntas livres.', 'bot');
 </script>
 </body>
 </html>
