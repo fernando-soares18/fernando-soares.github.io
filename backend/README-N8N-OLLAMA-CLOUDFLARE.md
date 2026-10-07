@@ -1,4 +1,4 @@
-# Nandolino 2.1 — n8n + Ollama + Cloudflare Tunnel
+# Nandolino 2.2 — n8n + Ollama + Cloudflare Tunnel
 
 ## Fluxo
 Portfólio -> Cloudflare Tunnel -> Webhook n8n -> AI Agent -> Ollama Chat Model -> Respond to Webhook.
@@ -10,7 +10,9 @@ O front-end usa `/webhook/nandolino`. O workflow precisa estar publicado/ativo n
 Use `Respond With: JSON` e, em modo Expression:
 
 ```text
+{% raw %}
 {{ JSON.stringify({ "reply": $json.output }) }}
+{% endraw %}
 ```
 
 ## Cloudflared

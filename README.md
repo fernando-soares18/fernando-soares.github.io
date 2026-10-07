@@ -1,4 +1,4 @@
-# Fernando Soares | Portfólio — Nandolino Skynet 2.1
+# Fernando Soares | Portfólio — Nandolino Skynet 2.2
 
 Portfólio de Fernando Soares com projetos Front-end, Code Snake, calculadora e o Nandolino: um assistente integrado a IA local através de n8n + Ollama + Cloudflare Tunnel.
 
@@ -8,7 +8,7 @@ Portfólio de Fernando Soares com projetos Front-end, Code Snake, calculadora e 
 - Projeto Dr. Charles Genehr: https://drcharlesgenehr.com.br
 - GitHub: https://github.com/fernando-soares18
 
-## Nandolino 2.1 — arquitetura
+## Nandolino 2.2 — arquitetura
 
 Fluxo atual:
 
